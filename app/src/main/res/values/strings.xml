@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Zentra</string>
+    <string name="permission_title">Zentra</string>
+    <string name="permission_description">Zentra needs access to your screen usage data to compute your life score.</string>
+    <string name="permission_instruction">Enable \"Usage Access\" for Zentra in the next screen.</string>
+    <string name="grant_access">Grant Access</string>
+    <string name="app_title">ZENTRA</string>
+    <string name="score_placeholder">--</string>
+    <string name="life_score_label">life score</string>
+    <string name="screen_time_today">Screen time today: %1$s</string>
+    <string name="top_apps_today">TOP APPS TODAY</string>
+    <string name="no_usage_data">No app usage recorded yet today.</string>
+    <string name="app_usage_item">%1$d. %2$s  —  %3$s</string>
+    <string name="feedback_high">You\'re in control.</string>
+    <string name="feedback_mid">You\'re slipping.</string>
+    <string name="feedback_low">You\'re wasting your day.</string>
+</resources>

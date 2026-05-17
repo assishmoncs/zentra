@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_dark"
+    android:fillViewport="true">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- ══════════════════════════════════════════
+             PERMISSION REQUEST PANEL
+             Shown when PACKAGE_USAGE_STATS is not granted
+             ══════════════════════════════════════════ -->
+        <LinearLayout
+            android:id="@+id/layoutPermission"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="40dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/permission_title"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:letterSpacing="0.15"
+                android:layout_marginBottom="40dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/permission_description"
+                android:textSize="16sp"
+                android:textColor="@color/text_secondary"
+                android:gravity="center"
+                android:lineSpacingMultiplier="1.4"
+                android:layout_marginBottom="12dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/permission_instruction"
+                android:textSize="14sp"
+                android:textColor="@color/text_hint"
+                android:gravity="center"
+                android:lineSpacingMultiplier="1.4"
+                android:layout_marginBottom="48dp" />
+
+            <Button
+                android:id="@+id/btnGrantPermission"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/grant_access"
+                android:textAllCaps="false"
+                android:textSize="16sp"
+                android:paddingStart="32dp"
+                android:paddingEnd="32dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:backgroundTint="@color/accent"
+                android:textColor="@color/bg_dark" />
+
+        </LinearLayout>
+
+        <!-- ══════════════════════════════════════════
+             MAIN CONTENT PANEL
+             Shown when permission is granted
+             ══════════════════════════════════════════ -->
+        <LinearLayout
+            android:id="@+id/layoutContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingStart="28dp"
+            android:paddingEnd="28dp"
+            android:paddingTop="64dp"
+            android:paddingBottom="48dp"
+            android:visibility="gone">
+
+            <!-- App title -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/app_title"
+                android:textSize="13sp"
+                android:textColor="@color/text_hint"
+                android:letterSpacing="0.3"
+                android:layout_marginBottom="40dp" />
+
+            <!-- Life Score — large centered number -->
+            <TextView
+                android:id="@+id/tvScore"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/score_placeholder"
+                android:textSize="96sp"
+                android:textStyle="bold"
+                android:textColor="@color/score_high"
+                android:includeFontPadding="false"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/life_score_label"
+                android:textSize="13sp"
+                android:textColor="@color/text_hint"
+                android:letterSpacing="0.15"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Feedback message -->
+            <TextView
+                android:id="@+id/tvFeedback"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textSize="20sp"
+                android:textStyle="italic"
+                android:textColor="@color/text_secondary"
+                android:gravity="center"
+                android:layout_marginBottom="52dp" />
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/divider"
+                android:layout_marginBottom="32dp" />
+
+            <!-- Total screen time -->
+            <TextView
+                android:id="@+id/tvTotalTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/screen_time_today"
+                android:textSize="15sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="32dp" />
+
+            <!-- Top apps section label -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/top_apps_today"
+                android:textSize="11sp"
+                android:textColor="@color/text_hint"
+                android:letterSpacing="0.2"
+                android:layout_marginBottom="12dp" />
+
+            <!-- App rows -->
+            <TextView
+                android:id="@+id/tvApp1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textSize="15sp"
+                android:textColor="@color/text_primary"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                android:visibility="gone" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/divider" />
+
+            <TextView
+                android:id="@+id/tvApp2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textSize="15sp"
+                android:textColor="@color/text_primary"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                android:visibility="gone" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/divider" />
+
+            <TextView
+                android:id="@+id/tvApp3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textSize="15sp"
+                android:textColor="@color/text_primary"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                android:visibility="gone" />
+
+            <!-- Shown when no usage data is available -->
+            <TextView
+                android:id="@+id/tvNoApps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/no_usage_data"
+                android:textSize="14sp"
+                android:textColor="@color/text_hint"
+                android:paddingTop="12dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+</ScrollView>

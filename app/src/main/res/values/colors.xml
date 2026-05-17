@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Backgrounds -->
+    <color name="bg_dark">#0D0D0D</color>
+    <color name="bg_surface">#1A1A1A</color>
+
+    <!-- Text -->
+    <color name="text_primary">#F0F0F0</color>
+    <color name="text_secondary">#A0A0A0</color>
+    <color name="text_hint">#505050</color>
+
+    <!-- Score colors -->
+    <color name="score_high">#4ADE80</color>   <!-- green  — score > 80 -->
+    <color name="score_mid">#FACC15</color>    <!-- amber  — score > 50 -->
+    <color name="score_low">#F87171</color>    <!-- red    — score ≤ 50 -->
+
+    <!-- Accent (button) -->
+    <color name="accent">#4ADE80</color>
+
+    <!-- Divider -->
+    <color name="divider">#222222</color>
+</resources>

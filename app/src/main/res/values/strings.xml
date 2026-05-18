@@ -42,4 +42,9 @@
     <string name="weekly_trends_title">WEEKLY TRENDS</string>
     <string name="weekly_avg_score">7-Day Average Focus: %1$d</string>
     <string name="weekly_total_time">Total Week Screen Time: %1$s</string>
+
+    <!-- Navigation -->
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_insights">Insights</string>
+    <string name="title_settings">Settings</string>
 </resources>

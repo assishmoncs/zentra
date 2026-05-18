@@ -95,7 +95,7 @@ object UsageStatsHelper {
                             packageName = stats.packageName,
                             appName = appName,
                             totalTimeMillis = stats.totalTimeInForeground,
-                            category = getCategory(stats.packageName)
+                            category = getCategory(context, stats.packageName)
                         )
                     }
                 }
@@ -130,7 +130,10 @@ object UsageStatsHelper {
         }
     }
 
-    private fun getCategory(packageName: String): AppCategory {
+    private fun getCategory(context: Context, packageName: String): AppCategory {
+        val custom = com.hsissa.zentra.core.SettingsManager(context).getAppCategory(packageName)
+        if (custom != null) return custom
+
         return when {
             PRODUCTIVE_PACKAGES.any { packageName.contains(it) } -> AppCategory.PRODUCTIVE
             DISTRACTING_PACKAGES.any { packageName.contains(it) } -> AppCategory.DISTRACTING

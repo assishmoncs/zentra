@@ -1,16 +1,23 @@
 # Zentra Productivity Roadmap
 
-- [x] **App Categorization & Weighted Scoring**
-    - Mark apps as "Productive" or "Distracting".
-    - Adjust Focus Score calculation based on app category.
-- [x] **Focus Sessions (Zen Mode)**
-    - Pomodoro-style timer for deep work.
-    - Optional "Stay Focused" overlay.
+- [ ] **Custom App Categorization**
+    - Let users mark apps as Productive, Neutral, or Distracting.
+    - Allow category overrides instead of relying only on predefined package lists.
+- [ ] **Configurable Weighted Scoring**
+    - Let users tune scoring impact per category.
+    - Show scoring model details in-app for transparency.
+- [ ] **Focus Sessions (Zen Mode) Enhancements**
+    - Add optional "Stay Focused" overlay during active sessions.
+    - Add session history and completion tracking.
 - [ ] **Mindfulness Check-ins**
     - Notifications for long sessions on distracting apps.
-- [x] **Daily Focus Goal**
-    - Set and track a target Focus Score.
-- [x] **Usage Insights & Trends**
-    - Weekly charts and focus patterns.
+    - Prompt short reflection/break suggestions.
+- [ ] **Personalized Daily Focus Goal**
+    - Let users set their own daily target score.
+    - Track goal streaks over time.
+- [ ] **Advanced Usage Insights & Trends**
+    - Weekly charts for score and screen-time patterns.
+    - Category-level trend breakdowns.
 - [ ] **Downtime Automation**
-    - Greyscale mode or DND during late-night hours.
+    - Scheduled greyscale mode or DND during late-night hours.
+    - User-defined quiet hours.

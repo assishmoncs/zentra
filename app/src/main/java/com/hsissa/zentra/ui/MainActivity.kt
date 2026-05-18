@@ -12,8 +12,12 @@ import androidx.core.content.ContextCompat
 import com.hsissa.zentra.R
 import com.hsissa.zentra.core.ScoreManager
 import com.hsissa.zentra.service.DailyUsageSummary
+import com.hsissa.zentra.service.TodayUsageResult
 import com.hsissa.zentra.service.UsageStatsHelper
 import com.hsissa.zentra.util.TimeFormatter
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
 
 /**
  * Main (and only) screen of Zentra.
@@ -25,6 +29,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var layoutPermission: LinearLayout
     private lateinit var layoutContent: LinearLayout
     private lateinit var btnGrantPermission: Button
+    private lateinit var btnRetry: Button
     private lateinit var tvScore: TextView
     private lateinit var tvFeedback: TextView
     private lateinit var tvTotalTime: TextView
@@ -32,6 +37,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvApp2: TextView
     private lateinit var tvApp3: TextView
     private lateinit var tvNoApps: TextView
+    private lateinit var tvState: TextView
+    private val usageExecutor: ExecutorService = Executors.newSingleThreadExecutor()
+    private var loadTask: Future<*>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,6 +48,10 @@ class MainActivity : AppCompatActivity() {
 
         btnGrantPermission.setOnClickListener {
             openUsageAccessSettings()
+        }
+
+        btnRetry.setOnClickListener {
+            loadAndDisplay()
         }
     }
 
@@ -54,21 +66,29 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onDestroy() {
+        loadTask?.cancel(true)
+        usageExecutor.shutdownNow()
+        super.onDestroy()
+    }
+
     // -------------------------------------------------------------------------
     // View binding
     // -------------------------------------------------------------------------
 
     private fun bindViews() {
-        layoutPermission  = findViewById(R.id.layoutPermission)
-        layoutContent     = findViewById(R.id.layoutContent)
+        layoutPermission = findViewById(R.id.layoutPermission)
+        layoutContent = findViewById(R.id.layoutContent)
         btnGrantPermission = findViewById(R.id.btnGrantPermission)
-        tvScore           = findViewById(R.id.tvScore)
-        tvFeedback        = findViewById(R.id.tvFeedback)
-        tvTotalTime       = findViewById(R.id.tvTotalTime)
-        tvApp1            = findViewById(R.id.tvApp1)
-        tvApp2            = findViewById(R.id.tvApp2)
-        tvApp3            = findViewById(R.id.tvApp3)
-        tvNoApps          = findViewById(R.id.tvNoApps)
+        btnRetry = findViewById(R.id.btnRetry)
+        tvScore = findViewById(R.id.tvScore)
+        tvFeedback = findViewById(R.id.tvFeedback)
+        tvTotalTime = findViewById(R.id.tvTotalTime)
+        tvApp1 = findViewById(R.id.tvApp1)
+        tvApp2 = findViewById(R.id.tvApp2)
+        tvApp3 = findViewById(R.id.tvApp3)
+        tvNoApps = findViewById(R.id.tvNoApps)
+        tvState = findViewById(R.id.tvState)
     }
 
     // -------------------------------------------------------------------------
@@ -77,7 +97,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun showPermissionRequest() {
         layoutPermission.visibility = View.VISIBLE
-        layoutContent.visibility   = View.GONE
+        layoutContent.visibility = View.GONE
     }
 
     private fun openUsageAccessSettings() {
@@ -90,12 +110,51 @@ class MainActivity : AppCompatActivity() {
 
     private fun showContent() {
         layoutPermission.visibility = View.GONE
-        layoutContent.visibility   = View.VISIBLE
+        layoutContent.visibility = View.VISIBLE
         loadAndDisplay()
     }
 
     private fun loadAndDisplay() {
-        val usageSummary = UsageStatsHelper.getTodaySummary(this)
+        showLoadingState()
+
+        loadTask?.cancel(true)
+        loadTask = usageExecutor.submit {
+            if (Thread.currentThread().isInterrupted) return@submit
+            val result = UsageStatsHelper.getTodaySummaryResult(this)
+            if (Thread.currentThread().isInterrupted) return@submit
+            runOnUiThread {
+                if (isFinishing || isDestroyed) return@runOnUiThread
+                when (result) {
+                    is TodayUsageResult.Success -> {
+                        hideState()
+                        renderSummary(result.summary)
+                    }
+
+                    is TodayUsageResult.Empty -> {
+                        renderSummary(result.summary)
+                        if (result.isUnexpected) {
+                            showErrorState(
+                                getString(R.string.usage_state_unexpected_empty),
+                                showRetry = true,
+                            )
+                        } else {
+                            hideState()
+                        }
+                    }
+
+                    TodayUsageResult.Error -> {
+                        renderSummary(DailyUsageSummary.EMPTY)
+                        showErrorState(
+                            getString(R.string.usage_state_error),
+                            showRetry = true,
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun renderSummary(usageSummary: DailyUsageSummary) {
         val score = ScoreManager.computeScore(usageSummary.totalScreenTimeMillis)
         val feedbackResId = ScoreManager.getFeedbackResId(score)
 
@@ -130,12 +189,29 @@ class MainActivity : AppCompatActivity() {
         appViews.forEachIndexed { index, view ->
             if (index < apps.size) {
                 val app = apps[index]
-                view.text       = getString(R.string.app_usage_item, index + 1, app.appName, app.formattedTime)
+                view.text = getString(R.string.app_usage_item, index + 1, app.appName, app.formattedTime)
                 view.visibility = View.VISIBLE
             } else {
                 view.visibility = View.GONE
             }
         }
+    }
+
+    private fun showLoadingState() {
+        tvState.visibility = View.VISIBLE
+        tvState.text = getString(R.string.usage_state_loading)
+        btnRetry.visibility = View.GONE
+    }
+
+    private fun showErrorState(message: String, showRetry: Boolean) {
+        tvState.visibility = View.VISIBLE
+        tvState.text = message
+        btnRetry.visibility = if (showRetry) View.VISIBLE else View.GONE
+    }
+
+    private fun hideState() {
+        tvState.visibility = View.GONE
+        btnRetry.visibility = View.GONE
     }
 
     /**

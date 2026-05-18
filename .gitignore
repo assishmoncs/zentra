@@ -1,27 +1,33 @@
-# OS
+# OS files
 .DS_Store
 Thumbs.db
 
-# IntelliJ / Android Studio
+# IDE
 .idea/
 *.iml
 
-# Gradle
+# Gradle and build outputs
 .gradle/
 build/
 **/build/
 
-# Android local config
+# Android local/config artifacts
 local.properties
 captures/
+.navigation/
 
 # Native build outputs
 .externalNativeBuild/
 .cxx/
 
-# Signing files
+# Signing artifacts
 *.jks
 *.keystore
 
-# Logs
+# Generated app packages
+*.apk
+*.aab
+
+# Logs and memory dumps
 *.log
+*.hprof

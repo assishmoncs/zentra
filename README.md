@@ -1,59 +1,75 @@
 # Zentra
 
-Zentra is a mobile app that tracks your daily screen usage and converts it into a simple "Life Score".
+Zentra is a Kotlin/XML Android app that reads daily usage stats and converts them into a **Life Score (0–100)** with short, actionable feedback.
 
-It is designed to give users a clear, honest view of how they spend their time — without distractions, without fluff.
+Package: `com.hsissa.zentra`
 
----
+## Current MVP Features
 
-## 🚀 Features
+- Usage Access permission flow
+- Daily total screen time (from midnight to now)
+- Top 3 most-used apps today
+- Life Score calculation with feedback states (high / mid / low)
+- Minimal dark UI focused on quick reading
 
-- 📊 Life Score (0–100) based on daily behavior
-- ⏱ Screen time tracking using Android Usage Stats
-- ⚠️ Real-time warnings for excessive usage
-- 🔒 App usage limits and blocking
-- 🤖 Brutal daily feedback based on habits
-- 📈 Simple and minimal UI focused on clarity
+## Tech Stack
 
----
+- Kotlin
+- XML layouts (no Jetpack Compose)
+- Android Usage Stats API (`UsageStatsManager`)
+- Material Components
 
-## 🧠 How It Works
+## Project Structure
 
-Zentra analyzes:
-- Time spent on distracting apps
-- App usage frequency
-- Daily consistency (streaks)
+```
+app/src/main/java/com/hsissa/zentra/
+├── core/        # score calculation logic
+├── service/     # UsageStats + permission helpers
+├── ui/          # activity and UI rendering
+└── util/        # shared formatting helpers
+```
 
-It then calculates a score that reflects how effectively you used your time.
+## How the Score Works
 
----
+Current score model uses threshold-based penalties:
 
-## 🎯 Goal
+- No penalty until healthy usage limit
+- Moderate penalty in caution range
+- Steeper penalty after excessive usage
 
-To help users become more aware of their habits and take control of their time through simple, honest feedback.
+Score is always clamped to `0..100`.
 
----
+## Setup
 
-## 🛠 Tech Stack
+1. Open in Android Studio (Hedgehog+ recommended).
+2. Sync Gradle project.
+3. Run app on Android 8.0+ device/emulator.
+4. In app, tap **Open Settings** and enable **Usage access** for Zentra.
 
-- Android (Java/Kotlin)
-- Usage Stats API
-- Local Storage (Room / SQLite)
-- Optional AI API (for feedback system)
+## Known MVP Limitations
 
----
+- No historical charts yet (today only)
+- No local persistence layer yet
+- No notifications or usage goals yet
+- Usage quality is based on duration only (not category/context)
 
-## ⚠️ Note
+## Roadmap
 
-This is an experimental project focused on behavior tracking and self-improvement. The scoring system is intentionally simple and designed for practical feedback, not scientific accuracy.
+### Immediate fixes (must-do)
+- Stabilize permission + empty-data states on more OEM devices
+- Add unit tests for score thresholds and time formatting
+- Add loading/error state when usage query returns empty unexpectedly
 
----
+### Short-term improvements
+- Add 7-day trend section (average score + total time)
+- Add configurable daily target (e.g., 2h, 3h, 4h)
+- Add app-level category tagging (productive/neutral/distracting)
 
-## 📌 Future Improvements
+### Future enhancements
+- Weekly summary screen with streaks and milestones
+- Local persistence for score history
+- Smart nudges (optional notifications) based on trend drops
 
-- Smarter scoring algorithm
-- Personalized AI feedback
-- Weekly insights and reports
-- Shareable score cards
+## License
 
----
+This repository is licensed under the terms in [LICENSE](./LICENSE).

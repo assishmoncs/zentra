@@ -6,6 +6,7 @@ import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Process
+import com.hsissa.zentra.util.TimeFormatter
 import java.util.Calendar
 
 /**
@@ -37,12 +38,12 @@ object UsageStatsHelper {
     }
 
     /**
-     * Fetches today's usage stats sorted by total foreground time descending.
-     * Excludes the app itself and system/internal packages with zero usage.
-     *
-     * @return List of [AppUsageInfo] for apps used today.
+     * Fetches today's usage summary.
+     * Excludes the app itself and packages with zero usage.
      */
-    fun getTodayUsage(context: Context): List<AppUsageInfo> {
+    fun getTodaySummary(context: Context): DailyUsageSummary {
+        if (!hasUsagePermission(context)) return DailyUsageSummary.EMPTY
+
         val usageStatsManager =
             context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
 
@@ -62,33 +63,48 @@ object UsageStatsHelper {
 
         val packageManager = context.packageManager
 
-        return statsMap.values.asSequence()
+        val usageList = statsMap.values.asSequence()
             .filter { it.totalTimeInForeground > 0 }
             .filter { it.packageName != context.packageName }
             .mapNotNull { stats ->
-                val appName = try {
-                    val appInfo = packageManager.getApplicationInfo(stats.packageName, 0)
-                    packageManager.getApplicationLabel(appInfo).toString()
-                } catch (_: PackageManager.NameNotFoundException) {
-                    null // Skip packages that can't be resolved
-                }
-                appName?.let {
+                resolveAppName(packageManager, stats.packageName)?.let { appName ->
                     AppUsageInfo(
                         packageName = stats.packageName,
-                        appName = it,
+                        appName = appName,
                         totalTimeMillis = stats.totalTimeInForeground,
                     )
                 }
             }
             .sortedByDescending { it.totalTimeMillis }
             .toList()
+
+        return DailyUsageSummary(
+            totalScreenTimeMillis = usageList.sumOf { it.totalTimeMillis },
+            topApps = usageList.take(MAX_TOP_APPS),
+        )
     }
 
-    /**
-     * Returns the total screen time today in milliseconds.
-     */
-    fun getTotalScreenTimeMillis(context: Context): Long {
-        return getTodayUsage(context).sumOf { it.totalTimeMillis }
+    private fun resolveAppName(packageManager: PackageManager, packageName: String): String? {
+        return try {
+            val appInfo = packageManager.getApplicationInfo(packageName, 0)
+            packageManager.getApplicationLabel(appInfo).toString()
+        } catch (_: PackageManager.NameNotFoundException) {
+            null
+        }
+    }
+
+    private const val MAX_TOP_APPS = 3
+}
+
+data class DailyUsageSummary(
+    val totalScreenTimeMillis: Long,
+    val topApps: List<AppUsageInfo>,
+) {
+    companion object {
+        val EMPTY = DailyUsageSummary(
+            totalScreenTimeMillis = 0L,
+            topApps = emptyList(),
+        )
     }
 }
 
@@ -105,10 +121,5 @@ data class AppUsageInfo(
 
     /** Formatted string like "1h 23m" or "45m". */
     val formattedTime: String
-        get() {
-            val minutes = totalTimeMinutes
-            val hours = minutes / 60
-            val mins = minutes % 60
-            return if (hours > 0) "${hours}h ${mins}m" else "${mins}m"
-        }
+        get() = TimeFormatter.formatMillis(totalTimeMillis)
 }

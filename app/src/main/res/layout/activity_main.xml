@@ -17,31 +17,31 @@
         <LinearLayout
             android:id="@+id/layoutPermission"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical"
             android:gravity="center"
-            android:padding="40dp"
+            android:padding="32dp"
             android:visibility="gone">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/permission_title"
-                android:textSize="32sp"
+                android:textSize="36sp"
                 android:textStyle="bold"
                 android:textColor="@color/text_primary"
                 android:letterSpacing="0.15"
-                android:layout_marginBottom="40dp" />
+                android:layout_marginBottom="24dp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/permission_description"
-                android:textSize="16sp"
+                android:textSize="17sp"
                 android:textColor="@color/text_secondary"
                 android:gravity="center"
                 android:lineSpacingMultiplier="1.4"
-                android:layout_marginBottom="12dp" />
+                android:layout_marginBottom="16dp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -51,17 +51,15 @@
                 android:textColor="@color/text_hint"
                 android:gravity="center"
                 android:lineSpacingMultiplier="1.4"
-                android:layout_marginBottom="48dp" />
+                android:layout_marginBottom="36dp" />
 
             <Button
                 android:id="@+id/btnGrantPermission"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/grant_access"
                 android:textAllCaps="false"
                 android:textSize="16sp"
-                android:paddingStart="32dp"
-                android:paddingEnd="32dp"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
                 android:backgroundTint="@color/accent"
@@ -93,7 +91,15 @@
                 android:textSize="13sp"
                 android:textColor="@color/text_hint"
                 android:letterSpacing="0.3"
-                android:layout_marginBottom="40dp" />
+                android:layout_marginBottom="10dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/app_subtitle"
+                android:textSize="14sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="36dp" />
 
             <!-- Life Score — large centered number -->
             <TextView
@@ -114,7 +120,7 @@
                 android:textSize="13sp"
                 android:textColor="@color/text_hint"
                 android:letterSpacing="0.15"
-                android:layout_marginBottom="16dp" />
+                android:layout_marginBottom="20dp" />
 
             <!-- Feedback message -->
             <TextView
@@ -126,6 +132,7 @@
                 android:textStyle="italic"
                 android:textColor="@color/text_secondary"
                 android:gravity="center"
+                android:lineSpacingMultiplier="1.2"
                 android:layout_marginBottom="52dp" />
 
             <!-- Divider -->

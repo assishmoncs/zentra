@@ -99,7 +99,7 @@ object UsageStatsHelper {
             if (summary.totalScreenTimeMillis > 0L || summary.topApps.isNotEmpty()) {
                 TodayUsageResult.Success(summary)
             } else {
-                val isUnexpected = (now - startOfDay) > EXPECTED_EMPTY_WINDOW_MILLIS
+                val isUnexpected = (now - startOfDay) > UNEXPECTED_EMPTY_THRESHOLD_MILLIS
                 TodayUsageResult.Empty(summary, isUnexpected)
             }
         } catch (_: SecurityException) {
@@ -119,7 +119,7 @@ object UsageStatsHelper {
     }
 
     private const val MAX_TOP_APPS = 3
-    private const val EXPECTED_EMPTY_WINDOW_MILLIS = 15 * 60 * 1000L
+    private const val UNEXPECTED_EMPTY_THRESHOLD_MILLIS = 15 * 60 * 1000L // Treat empty data as expected for the first 15 minutes after local midnight (startOfDay).
     private const val PROBE_WINDOW_MILLIS = 60 * 60 * 1000L
 }
 

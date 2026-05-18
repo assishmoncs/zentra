@@ -15,7 +15,9 @@ import com.hsissa.zentra.service.DailyUsageSummary
 import com.hsissa.zentra.service.TodayUsageResult
 import com.hsissa.zentra.service.UsageStatsHelper
 import com.hsissa.zentra.util.TimeFormatter
-import kotlin.concurrent.thread
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
 
 /**
  * Main (and only) screen of Zentra.
@@ -36,6 +38,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvApp3: TextView
     private lateinit var tvNoApps: TextView
     private lateinit var tvState: TextView
+    private val usageExecutor: ExecutorService = Executors.newSingleThreadExecutor()
+    private var loadTask: Future<*>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,6 +64,12 @@ class MainActivity : AppCompatActivity() {
         } else {
             showPermissionRequest()
         }
+    }
+
+    override fun onDestroy() {
+        loadTask?.cancel(true)
+        usageExecutor.shutdownNow()
+        super.onDestroy()
     }
 
     // -------------------------------------------------------------------------
@@ -107,9 +117,13 @@ class MainActivity : AppCompatActivity() {
     private fun loadAndDisplay() {
         showLoadingState()
 
-        thread {
+        loadTask?.cancel(true)
+        loadTask = usageExecutor.submit {
+            if (Thread.currentThread().isInterrupted) return@submit
             val result = UsageStatsHelper.getTodaySummaryResult(this)
+            if (Thread.currentThread().isInterrupted) return@submit
             runOnUiThread {
+                if (isFinishing || isDestroyed) return@runOnUiThread
                 when (result) {
                     is TodayUsageResult.Success -> {
                         hideState()

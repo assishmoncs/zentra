@@ -18,7 +18,7 @@
     <string name="app_usage_item">%1$d. %2$s  —  %3$s</string>
 
     <string name="usage_state_loading">Loading today’s usage…</string>
-    <string name="usage_state_unexpected_empty">Usage data is temporarily unavailable. Tap retry in a moment.</string>
+    <string name="usage_state_unexpected_empty">Usage data is temporarily unavailable. Tap Retry in a moment.</string>
     <string name="usage_state_error">Couldn’t read usage stats right now. Check permission and try again.</string>
 
     <string name="feedback_high">Strong focus today.</string>

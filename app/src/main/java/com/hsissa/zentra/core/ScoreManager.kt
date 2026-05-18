@@ -4,7 +4,7 @@ import com.hsissa.zentra.R
 import kotlin.math.roundToInt
 
 /**
- * Computes the life score based on total screen time.
+ * Computes the life score based on screen time.
  *
  * Uses a threshold-based penalty model:
  * - No penalty under a healthy daily target.
@@ -14,13 +14,13 @@ import kotlin.math.roundToInt
 object ScoreManager {
 
     /**
-     * Computes the life score from total screen time in milliseconds.
+     * Computes the score from screen time in milliseconds.
      *
-     * @param totalScreenTimeMillis Total foreground usage today in milliseconds.
+     * @param screenTimeMillis Usage duration today in milliseconds.
      * @return Score in range [0, 100].
      */
-    fun computeScore(totalScreenTimeMillis: Long): Int {
-        val minutes = totalScreenTimeMillis / 1000.0 / 60.0
+    fun computeScore(screenTimeMillis: Long): Int {
+        val minutes = screenTimeMillis / 1000.0 / 60.0
 
         val penalty = when {
             minutes <= HEALTHY_LIMIT_MINUTES -> 0.0

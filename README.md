@@ -1,75 +1,57 @@
 # Zentra
 
-Zentra is an Android MVP app that calculates a daily **Life Score (0–100)** from device screen usage and shows concise feedback to help users reduce distraction.
+Zentra is a modern Android productivity companion designed to foster mindful digital usage through data-driven insights and focused work sessions. Built with Material 3, it transforms device usage statistics into a meaningful **Focus Score**, helping users reclaim their time.
 
-- **Package:** `com.hsissa.zentra`
-- **Platform:** Android (API 26+)
-- **UI:** Kotlin + XML (no Jetpack Compose)
+## 🚀 Key Features
 
-## What the app does
+-   **Intelligent Focus Scoring**: A weighted scoring model that distinguishes between Productive and Distracting apps.
+-   **Zen Mode (Focus Sessions)**: Built-in Pomodoro-style timer (25-minute default) to facilitate deep work.
+-   **Weekly Trends**: Comprehensive 7-day analytics showing focus patterns and screen time metrics.
+-   **Daily Goals**: Set and track personalized daily focus targets (Default: 80 points).
+-   **Real-time Insights**: View total screen time and top-used apps with high-precision tracking.
 
-- Requests and validates Usage Access permission
-- Reads today’s foreground usage from `UsageStatsManager`
-- Calculates a Life Score using threshold-based penalties
-- Displays:
-  - Daily screen time
-  - Top 3 most-used apps
-  - Score-based feedback (high / mid / low)
-- Handles operational states in the main screen:
-  - Loading state while usage data is fetched
-  - Retryable error state when usage data cannot be read
-  - Unexpected-empty state handling for OEM/device inconsistencies
+## 🧠 Core Philosophy
 
-## Score model
+Zentra operates on a weighted usage model to calculate your **Focus Score (0-100)**:
 
-`Score = 100 - penalty`, clamped to `0..100`.
+-   **Productive Apps**: Low impact on score (20% weight).
+-   **Neutral Apps**: Standard impact (100% weight).
+-   **Distracting Apps**: High impact (200% weight).
 
-Penalty rules:
-- No penalty up to **90 minutes**
-- Moderate penalty from **90–240 minutes**
-- Higher penalty above **240 minutes**
+The score encourages a balanced digital diet by penalizing time spent on distractions more heavily than time spent on tools for growth and work.
 
-Feedback bands:
-- **High:** `>= 80`
-- **Mid:** `50..79`
-- **Low:** `< 50`
+## 🛠 Tech Stack
 
-## Project structure
+-   **Language**: Kotlin
+-   **Architecture**: MVP (Model-View-Presenter)
+-   **UI**: XML with Material 3 Design Components
+-   **Data**: Android UsageStatsManager API
+
+## 📂 Project Structure
 
 ```text
 app/src/main/java/com/hsissa/zentra/
-├── core/        # score calculation logic
-├── service/     # UsageStats + permission + summary state handling
-├── ui/          # MainActivity and UI rendering
-└── util/        # shared formatting helpers
+├── core/        # Scoring logic and session management
+├── service/     # Usage statistics and system integration
+├── ui/          # View logic and Material 3 implementations
+└── util/        # Formatting and helper utilities
 ```
 
-## Setup
+## 📥 Getting Started
 
-1. Open the project in Android Studio.
-2. Sync Gradle.
-3. Run on an Android 8.0+ device or emulator.
-4. In Zentra, tap **Open Settings** and enable **Usage access** for the app.
+1.  **Clone the repository**: `git clone https://github.com/hsissa/zentra.git`
+2.  **Open in Android Studio**: Sync Gradle and build the project.
+3.  **Deploy**: Run on an Android 8.0+ (API 26) device.
+4.  **Permissions**: Grant **Usage Access** when prompted to enable data tracking.
 
-## Testing
+## 🧪 Testing
 
-Unit tests cover score behavior and time formatting in:
-- `app/src/test/java/com/hsissa/zentra/core/ScoreManagerTest.kt`
-- `app/src/test/java/com/hsissa/zentra/util/TimeFormatterTest.kt`
-
-Run tests with:
+The core scoring logic and utility functions are backed by unit tests:
 
 ```bash
-gradle test
+./gradlew test
 ```
 
-## Current MVP scope
+## 📜 License
 
-- Data shown is for **today only**
-- No local persistence/history storage
-- No notifications or goals system
-- Usage quality is based on duration, not app category/context
-
-## License
-
-This repository is licensed under [LICENSE](./LICENSE).
+Distributed under the [MIT License](./LICENSE).

@@ -2,6 +2,7 @@ package com.hsissa.zentra.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.provider.Settings
 import android.view.View
 import android.widget.Button
@@ -9,12 +10,14 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.google.android.material.button.MaterialButton
 import com.hsissa.zentra.R
 import com.hsissa.zentra.core.ScoreManager
 import com.hsissa.zentra.service.DailyUsageSummary
 import com.hsissa.zentra.service.TodayUsageResult
 import com.hsissa.zentra.service.UsageStatsHelper
 import com.hsissa.zentra.util.TimeFormatter
+import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
@@ -38,6 +41,16 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvApp3: TextView
     private lateinit var tvNoApps: TextView
     private lateinit var tvState: TextView
+    private lateinit var tvGoalStatus: TextView
+    private lateinit var tvWeeklyAvgScore: TextView
+    private lateinit var tvWeeklyTotalTime: TextView
+
+    // --- Focus Session ---
+    private lateinit var tvFocusTimer: TextView
+    private lateinit var btnFocusToggle: MaterialButton
+    private var countDownTimer: CountDownTimer? = null
+    private var isFocusRunning = false
+
     private val usageExecutor: ExecutorService = Executors.newSingleThreadExecutor()
     private var loadTask: Future<*>? = null
 
@@ -52,6 +65,10 @@ class MainActivity : AppCompatActivity() {
 
         btnRetry.setOnClickListener {
             loadAndDisplay()
+        }
+
+        btnFocusToggle.setOnClickListener {
+            toggleFocusSession()
         }
     }
 
@@ -89,6 +106,12 @@ class MainActivity : AppCompatActivity() {
         tvApp3 = findViewById(R.id.tvApp3)
         tvNoApps = findViewById(R.id.tvNoApps)
         tvState = findViewById(R.id.tvState)
+        tvGoalStatus = findViewById(R.id.tvGoalStatus)
+        tvWeeklyAvgScore = findViewById(R.id.tvWeeklyAvgScore)
+        tvWeeklyTotalTime = findViewById(R.id.tvWeeklyTotalTime)
+
+        tvFocusTimer = findViewById(R.id.tvFocusTimer)
+        btnFocusToggle = findViewById(R.id.btnFocusToggle)
     }
 
     // -------------------------------------------------------------------------
@@ -121,6 +144,8 @@ class MainActivity : AppCompatActivity() {
         loadTask = usageExecutor.submit {
             if (Thread.currentThread().isInterrupted) return@submit
             val result = UsageStatsHelper.getTodaySummaryResult(this)
+            val weeklyResult = UsageStatsHelper.getSummaryResultForDays(this, 7)
+
             if (Thread.currentThread().isInterrupted) return@submit
             runOnUiThread {
                 if (isFinishing || isDestroyed) return@runOnUiThread
@@ -150,12 +175,16 @@ class MainActivity : AppCompatActivity() {
                         )
                     }
                 }
+
+                if (weeklyResult is TodayUsageResult.Success) {
+                    renderWeeklyTrends(weeklyResult.summary)
+                }
             }
         }
     }
 
     private fun renderSummary(usageSummary: DailyUsageSummary) {
-        val score = ScoreManager.computeScore(usageSummary.totalScreenTimeMillis)
+        val score = ScoreManager.computeScore(usageSummary.weightedScreenTimeMillis)
         val feedbackResId = ScoreManager.getFeedbackResId(score)
 
         // Score
@@ -173,6 +202,29 @@ class MainActivity : AppCompatActivity() {
 
         // Top apps
         renderTopApps(usageSummary)
+
+        // Goal status
+        renderGoalStatus(score)
+    }
+
+    private fun renderGoalStatus(currentScore: Int) {
+        if (currentScore >= DAILY_GOAL_SCORE) {
+            tvGoalStatus.text = getString(R.string.goal_reached)
+            tvGoalStatus.setTextColor(ContextCompat.getColor(this, R.color.score_high))
+        } else {
+            val remaining = DAILY_GOAL_SCORE - currentScore
+            tvGoalStatus.text = getString(R.string.goal_remaining, remaining)
+            tvGoalStatus.setTextColor(ContextCompat.getColor(this, R.color.text_secondary))
+        }
+    }
+
+    private fun renderWeeklyTrends(weeklySummary: DailyUsageSummary) {
+        val avgScore = ScoreManager.computeScore(weeklySummary.weightedScreenTimeMillis / 7)
+        tvWeeklyAvgScore.text = getString(R.string.weekly_avg_score, avgScore)
+        tvWeeklyTotalTime.text = getString(
+            R.string.weekly_total_time,
+            TimeFormatter.formatMillis(weeklySummary.totalScreenTimeMillis)
+        )
     }
 
     private fun renderTopApps(summary: DailyUsageSummary) {
@@ -214,6 +266,44 @@ class MainActivity : AppCompatActivity() {
         btnRetry.visibility = View.GONE
     }
 
+    // -------------------------------------------------------------------------
+    // Focus Session Logic
+    // -------------------------------------------------------------------------
+
+    private fun toggleFocusSession() {
+        if (isFocusRunning) {
+            stopFocusSession()
+        } else {
+            startFocusSession()
+        }
+    }
+
+    private fun startFocusSession() {
+        isFocusRunning = true
+        btnFocusToggle.text = getString(R.string.focus_session_stop)
+
+        countDownTimer = object : CountDownTimer(FOCUS_DURATION_MS, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                val minutes = (millisUntilFinished / 1000) / 60
+                val seconds = (millisUntilFinished / 1000) % 60
+                tvFocusTimer.text = String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
+            }
+
+            override fun onFinish() {
+                isFocusRunning = false
+                tvFocusTimer.text = getString(R.string.focus_session_finished)
+                btnFocusToggle.text = getString(R.string.focus_session_start)
+            }
+        }.start()
+    }
+
+    private fun stopFocusSession() {
+        countDownTimer?.cancel()
+        isFocusRunning = false
+        btnFocusToggle.text = getString(R.string.focus_session_start)
+        tvFocusTimer.text = getString(R.string.focus_session_timer_placeholder)
+    }
+
     /**
      * Returns a color resource int based on the score value.
      * Green for high, amber for mid, red for low.
@@ -224,5 +314,10 @@ class MainActivity : AppCompatActivity() {
             ScoreManager.isMidScore(score) -> ContextCompat.getColor(this, R.color.score_mid)
             else -> ContextCompat.getColor(this, R.color.score_low)
         }
+    }
+
+    companion object {
+        private const val FOCUS_DURATION_MS = 25 * 60 * 1000L
+        private const val DAILY_GOAL_SCORE = 80
     }
 }

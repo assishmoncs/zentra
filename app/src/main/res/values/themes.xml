@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.Zentra" parent="Theme.MaterialComponents.NoActionBar">
+    <style name="Theme.Zentra" parent="Theme.Material3.Dark.NoActionBar">
         <!-- Background -->
         <item name="android:windowBackground">@color/bg_dark</item>
         <item name="android:colorBackground">@color/bg_dark</item>
@@ -12,12 +12,11 @@
         <!-- Navigation bar -->
         <item name="android:navigationBarColor">@color/bg_dark</item>
 
-        <!-- Text -->
-        <item name="android:textColorPrimary">@color/text_primary</item>
-        <item name="android:textColorSecondary">@color/text_secondary</item>
-
-        <!-- Button -->
+        <!-- Material 3 mapping -->
         <item name="colorPrimary">@color/accent</item>
         <item name="colorOnPrimary">@color/bg_dark</item>
+        <item name="colorSurface">@color/bg_surface</item>
+        <item name="colorSurfaceVariant">@color/bg_card</item>
+        <item name="colorOutline">@color/divider</item>
     </style>
 </resources>

@@ -1,22 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Backgrounds -->
-    <color name="bg_dark">#0D0D0D</color>
-    <color name="bg_surface">#1A1A1A</color>
+    <color name="bg_dark">#080808</color>
+    <color name="bg_surface">#121212</color>
+    <color name="bg_card">#1C1C1E</color>
 
     <!-- Text -->
-    <color name="text_primary">#F0F0F0</color>
-    <color name="text_secondary">#A0A0A0</color>
-    <color name="text_hint">#757575</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#EBEBF5</color>
+    <color name="text_tertiary">#A0A0A0</color>
+    <color name="text_hint">#636366</color>
 
     <!-- Score colors -->
-    <color name="score_high">#4ADE80</color>   <!-- green  — score > 80 -->
-    <color name="score_mid">#FACC15</color>    <!-- amber  — score > 50 -->
-    <color name="score_low">#F87171</color>    <!-- red    — score ≤ 50 -->
+    <color name="score_high">#34C759</color>   <!-- green -->
+    <color name="score_mid">#FFCC00</color>    <!-- yellow -->
+    <color name="score_low">#FF3B30</color>    <!-- red -->
 
-    <!-- Accent (button) -->
-    <color name="accent">#4ADE80</color>
+    <!-- Accent -->
+    <color name="accent">#34C759</color>
+    <color name="accent_soft">#1A34C759</color>
 
     <!-- Divider -->
-    <color name="divider">#222222</color>
+    <color name="divider">#2C2C2E</color>
 </resources>

@@ -2,26 +2,44 @@
 <resources>
     <string name="app_name">Zentra</string>
     <string name="permission_title">Zentra</string>
-    <string name="permission_description">Zentra needs access to your screen time usage to calculate your daily life score.</string>
-    <string name="permission_instruction">In the next screen, open Zentra and enable “Usage access”.</string>
-    <string name="grant_access">Open Settings</string>
+    <string name="permission_description">To calculate your focus and provide insights, Zentra requires access to your usage statistics.</string>
+    <string name="permission_instruction">Please enable “Usage access” for Zentra in the next screen.</string>
+    <string name="grant_access">Continue to Settings</string>
     <string name="retry">Retry</string>
 
     <string name="app_title">ZENTRA</string>
-    <string name="app_subtitle">Daily screen usage score</string>
+    <string name="app_subtitle">Mindful Digital Usage</string>
     <string name="score_placeholder">--</string>
-    <string name="life_score_label">life score / 100</string>
+    <string name="life_score_label">FOCUS SCORE</string>
 
-    <string name="screen_time_today">Screen time today: %1$s</string>
-    <string name="top_apps_today">TOP APPS TODAY</string>
-    <string name="no_usage_data">No app usage recorded yet today.</string>
-    <string name="app_usage_item">%1$d. %2$s  —  %3$s</string>
+    <string name="screen_time_today">Total Screen Time: %1$s</string>
+    <string name="top_apps_today">MOST USED APPS</string>
+    <string name="no_usage_data">No activity recorded today.</string>
+    <string name="app_usage_item">%1$d. %2$s  •  %3$s</string>
 
-    <string name="usage_state_loading">Loading today’s usage…</string>
-    <string name="usage_state_unexpected_empty">Usage data is temporarily unavailable. Tap Retry in a moment.</string>
-    <string name="usage_state_error">Couldn’t read usage stats right now. Check permission and try again.</string>
+    <string name="usage_state_loading">Syncing usage data…</string>
+    <string name="usage_state_unexpected_empty">Data is taking a moment to sync. Please try again.</string>
+    <string name="usage_state_error">Unable to retrieve usage statistics. Please verify permissions.</string>
 
-    <string name="feedback_high">Strong focus today.</string>
-    <string name="feedback_mid">Still recoverable. Cut distractions now.</string>
-    <string name="feedback_low">Heavy distraction today. Reset and start again.</string>
+    <string name="feedback_high">Excellent focus today. You’re in control.</string>
+    <string name="feedback_mid">Moderate usage. Consider a short break.</string>
+    <string name="feedback_low">High distraction detected. Time to disconnect.</string>
+
+    <!-- Focus Session -->
+    <string name="focus_session_title">FOCUS SESSION</string>
+    <string name="focus_session_start">Start Focus</string>
+    <string name="focus_session_stop">Stop</string>
+    <string name="focus_session_timer_placeholder">25:00</string>
+    <string name="focus_session_finished">Session Finished!</string>
+    <string name="focus_session_running">Focusing…</string>
+
+    <!-- Daily Goal -->
+    <string name="goal_label">Daily Goal: %1$d</string>
+    <string name="goal_reached">Daily Goal Achieved! 🎯</string>
+    <string name="goal_remaining">%1$d points to reach goal</string>
+
+    <!-- Weekly Trends -->
+    <string name="weekly_trends_title">WEEKLY TRENDS</string>
+    <string name="weekly_avg_score">7-Day Average Focus: %1$d</string>
+    <string name="weekly_total_time">Total Week Screen Time: %1$s</string>
 </resources>

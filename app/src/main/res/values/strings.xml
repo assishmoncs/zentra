@@ -2,17 +2,18 @@
 <resources>
     <string name="app_name">Zentra</string>
     <string name="permission_title">Zentra</string>
-    <string name="permission_description">Zentra needs access to your screen usage data to compute your life score.</string>
-    <string name="permission_instruction">Enable \"Usage Access\" for Zentra in the next screen.</string>
-    <string name="grant_access">Grant Access</string>
+    <string name="permission_description">Zentra needs access to your screen time usage to calculate your daily life score.</string>
+    <string name="permission_instruction">In the next screen, open Zentra and enable “Usage access”.</string>
+    <string name="grant_access">Open Settings</string>
     <string name="app_title">ZENTRA</string>
+    <string name="app_subtitle">Daily screen usage score</string>
     <string name="score_placeholder">--</string>
-    <string name="life_score_label">life score</string>
+    <string name="life_score_label">life score / 100</string>
     <string name="screen_time_today">Screen time today: %1$s</string>
     <string name="top_apps_today">TOP APPS TODAY</string>
     <string name="no_usage_data">No app usage recorded yet today.</string>
     <string name="app_usage_item">%1$d. %2$s  —  %3$s</string>
-    <string name="feedback_high">You\'re in control.</string>
-    <string name="feedback_mid">You\'re slipping.</string>
-    <string name="feedback_low">You\'re wasting your day.</string>
+    <string name="feedback_high">Strong focus today.</string>
+    <string name="feedback_mid">Still recoverable. Cut distractions now.</string>
+    <string name="feedback_low">Heavy distraction today. Reset and start again.</string>
 </resources>

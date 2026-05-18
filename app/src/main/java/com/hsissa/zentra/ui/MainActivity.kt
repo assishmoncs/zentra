@@ -8,9 +8,10 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.hsissa.zentra.R
 import com.hsissa.zentra.core.ScoreManager
-import com.hsissa.zentra.service.AppUsageInfo
+import com.hsissa.zentra.service.DailyUsageSummary
 import com.hsissa.zentra.service.UsageStatsHelper
 import com.hsissa.zentra.util.TimeFormatter
 
@@ -94,26 +95,29 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadAndDisplay() {
-        val totalMillis = UsageStatsHelper.getTotalScreenTimeMillis(this)
-        val score       = ScoreManager.computeScore(totalMillis)
+        val usageSummary = UsageStatsHelper.getTodaySummary(this)
+        val score = ScoreManager.computeScore(usageSummary.totalScreenTimeMillis)
         val feedbackResId = ScoreManager.getFeedbackResId(score)
-        val topApps     = UsageStatsHelper.getTodayUsage(this).take(3)
 
         // Score
-        tvScore.text   = score.toString()
+        tvScore.text = score.toString()
         tvFeedback.setText(feedbackResId)
 
         // Apply color tint based on score range
         tvScore.setTextColor(scoreColor(score))
 
         // Total screen time
-        tvTotalTime.text = getString(R.string.screen_time_today, TimeFormatter.formatMillis(totalMillis))
+        tvTotalTime.text = getString(
+            R.string.screen_time_today,
+            TimeFormatter.formatMillis(usageSummary.totalScreenTimeMillis),
+        )
 
         // Top apps
-        renderTopApps(topApps)
+        renderTopApps(usageSummary)
     }
 
-    private fun renderTopApps(apps: List<AppUsageInfo>) {
+    private fun renderTopApps(summary: DailyUsageSummary) {
+        val apps = summary.topApps
         val appViews = listOf(tvApp1, tvApp2, tvApp3)
 
         if (apps.isEmpty()) {
@@ -140,9 +144,9 @@ class MainActivity : AppCompatActivity() {
      */
     private fun scoreColor(score: Int): Int {
         return when {
-            score > 80 -> getColor(R.color.score_high)
-            score > 50 -> getColor(R.color.score_mid)
-            else       -> getColor(R.color.score_low)
+            score >= 80 -> ContextCompat.getColor(this, R.color.score_high)
+            score >= 50 -> ContextCompat.getColor(this, R.color.score_mid)
+            else -> ContextCompat.getColor(this, R.color.score_low)
         }
     }
 }

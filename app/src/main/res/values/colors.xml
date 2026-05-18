@@ -7,7 +7,7 @@
     <!-- Text -->
     <color name="text_primary">#F0F0F0</color>
     <color name="text_secondary">#A0A0A0</color>
-    <color name="text_hint">#505050</color>
+    <color name="text_hint">#757575</color>
 
     <!-- Score colors -->
     <color name="score_high">#4ADE80</color>   <!-- green  — score > 80 -->

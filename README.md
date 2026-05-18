@@ -1,75 +1,75 @@
 # Zentra
 
-Zentra is a Kotlin/XML Android app that reads daily usage stats and converts them into a **Life Score (0–100)** with short, actionable feedback.
+Zentra is an Android MVP app that calculates a daily **Life Score (0–100)** from device screen usage and shows concise feedback to help users reduce distraction.
 
-Package: `com.hsissa.zentra`
+- **Package:** `com.hsissa.zentra`
+- **Platform:** Android (API 26+)
+- **UI:** Kotlin + XML (no Jetpack Compose)
 
-## Current MVP Features
+## What the app does
 
-- Usage Access permission flow
-- Daily total screen time (from midnight to now)
-- Top 3 most-used apps today
-- Life Score calculation with feedback states (high / mid / low)
-- Minimal dark UI focused on quick reading
+- Requests and validates Usage Access permission
+- Reads today’s foreground usage from `UsageStatsManager`
+- Calculates a Life Score using threshold-based penalties
+- Displays:
+  - Daily screen time
+  - Top 3 most-used apps
+  - Score-based feedback (high / mid / low)
+- Handles operational states in the main screen:
+  - Loading state while usage data is fetched
+  - Retryable error state when usage data cannot be read
+  - Unexpected-empty state handling for OEM/device inconsistencies
 
-## Tech Stack
+## Score model
 
-- Kotlin
-- XML layouts (no Jetpack Compose)
-- Android Usage Stats API (`UsageStatsManager`)
-- Material Components
+`Score = 100 - penalty`, clamped to `0..100`.
 
-## Project Structure
+Penalty rules:
+- No penalty up to **90 minutes**
+- Moderate penalty from **90–240 minutes**
+- Higher penalty above **240 minutes**
 
-```
+Feedback bands:
+- **High:** `>= 80`
+- **Mid:** `50..79`
+- **Low:** `< 50`
+
+## Project structure
+
+```text
 app/src/main/java/com/hsissa/zentra/
 ├── core/        # score calculation logic
-├── service/     # UsageStats + permission helpers
-├── ui/          # activity and UI rendering
+├── service/     # UsageStats + permission + summary state handling
+├── ui/          # MainActivity and UI rendering
 └── util/        # shared formatting helpers
 ```
 
-## How the Score Works
-
-Current score model uses threshold-based penalties:
-
-- No penalty until healthy usage limit
-- Moderate penalty in caution range
-- Steeper penalty after excessive usage
-
-Score is always clamped to `0..100`.
-
 ## Setup
 
-1. Open in Android Studio (Hedgehog+ recommended).
-2. Sync Gradle project.
-3. Run app on Android 8.0+ device/emulator.
-4. In app, tap **Open Settings** and enable **Usage access** for Zentra.
+1. Open the project in Android Studio.
+2. Sync Gradle.
+3. Run on an Android 8.0+ device or emulator.
+4. In Zentra, tap **Open Settings** and enable **Usage access** for the app.
 
-## Known MVP Limitations
+## Testing
 
-- No historical charts yet (today only)
-- No local persistence layer yet
-- No notifications or usage goals yet
-- Usage quality is based on duration only (not category/context)
+Unit tests cover score behavior and time formatting in:
+- `app/src/test/java/com/hsissa/zentra/core/ScoreManagerTest.kt`
+- `app/src/test/java/com/hsissa/zentra/util/TimeFormatterTest.kt`
 
-## Roadmap
+Run tests with:
 
-### Immediate fixes (must-do)
-- Stabilize permission + empty-data states on more OEM devices
-- Add unit tests for score thresholds and time formatting
-- Add loading/error state when usage query returns empty unexpectedly
+```bash
+gradle test
+```
 
-### Short-term improvements
-- Add 7-day trend section (average score + total time)
-- Add configurable daily target (e.g., 2h, 3h, 4h)
-- Add app-level category tagging (productive/neutral/distracting)
+## Current MVP scope
 
-### Future enhancements
-- Weekly summary screen with streaks and milestones
-- Local persistence for score history
-- Smart nudges (optional notifications) based on trend drops
+- Data shown is for **today only**
+- No local persistence/history storage
+- No notifications or goals system
+- Usage quality is based on duration, not app category/context
 
 ## License
 
-This repository is licensed under the terms in [LICENSE](./LICENSE).
+This repository is licensed under [LICENSE](./LICENSE).

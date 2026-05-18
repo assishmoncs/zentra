@@ -5,14 +5,22 @@
     <string name="permission_description">Zentra needs access to your screen time usage to calculate your daily life score.</string>
     <string name="permission_instruction">In the next screen, open Zentra and enable “Usage access”.</string>
     <string name="grant_access">Open Settings</string>
+    <string name="retry">Retry</string>
+
     <string name="app_title">ZENTRA</string>
     <string name="app_subtitle">Daily screen usage score</string>
     <string name="score_placeholder">--</string>
     <string name="life_score_label">life score / 100</string>
+
     <string name="screen_time_today">Screen time today: %1$s</string>
     <string name="top_apps_today">TOP APPS TODAY</string>
     <string name="no_usage_data">No app usage recorded yet today.</string>
     <string name="app_usage_item">%1$d. %2$s  —  %3$s</string>
+
+    <string name="usage_state_loading">Loading today’s usage…</string>
+    <string name="usage_state_unexpected_empty">Usage data is temporarily unavailable. Tap retry in a moment.</string>
+    <string name="usage_state_error">Couldn’t read usage stats right now. Check permission and try again.</string>
+
     <string name="feedback_high">Strong focus today.</string>
     <string name="feedback_mid">Still recoverable. Cut distractions now.</string>
     <string name="feedback_low">Heavy distraction today. Reset and start again.</string>

@@ -43,11 +43,15 @@ object ScoreManager {
      */
     fun getFeedbackResId(score: Int): Int {
         return when {
-            score >= HIGH_SCORE_THRESHOLD -> R.string.feedback_high
-            score >= MID_SCORE_THRESHOLD -> R.string.feedback_mid
+            isHighScore(score) -> R.string.feedback_high
+            isMidScore(score) -> R.string.feedback_mid
             else       -> R.string.feedback_low
         }
     }
+
+    fun isHighScore(score: Int): Boolean = score >= HIGH_SCORE_THRESHOLD
+
+    fun isMidScore(score: Int): Boolean = score >= MID_SCORE_THRESHOLD
 
     private const val MIN_SCORE = 0
     private const val MAX_SCORE = 100

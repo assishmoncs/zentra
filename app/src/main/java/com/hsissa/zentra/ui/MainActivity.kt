@@ -144,8 +144,8 @@ class MainActivity : AppCompatActivity() {
      */
     private fun scoreColor(score: Int): Int {
         return when {
-            score >= 80 -> ContextCompat.getColor(this, R.color.score_high)
-            score >= 50 -> ContextCompat.getColor(this, R.color.score_mid)
+            ScoreManager.isHighScore(score) -> ContextCompat.getColor(this, R.color.score_high)
+            ScoreManager.isMidScore(score) -> ContextCompat.getColor(this, R.color.score_mid)
             else -> ContextCompat.getColor(this, R.color.score_low)
         }
     }

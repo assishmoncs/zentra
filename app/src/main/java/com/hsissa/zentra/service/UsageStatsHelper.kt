@@ -85,10 +85,13 @@ object UsageStatsHelper {
             )
             
             val packageManager = context.packageManager
+            val launcherPackage = getLauncherPackageName(packageManager)
 
             val usageList = statsMap.values.asSequence()
                 .filter { it.totalTimeInForeground > 0 }
                 .filter { it.packageName != context.packageName }
+                .filter { it.packageName != launcherPackage }
+                .filter { it.packageName != "com.android.systemui" }
                 .mapNotNull { stats ->
                     resolveAppName(packageManager, stats.packageName)?.let { appName ->
                         AppUsageInfo(
@@ -128,6 +131,14 @@ object UsageStatsHelper {
         } catch (_: PackageManager.NameNotFoundException) {
             null
         }
+    }
+
+    private fun getLauncherPackageName(packageManager: PackageManager): String? {
+        val intent = android.content.Intent(android.content.Intent.ACTION_MAIN).apply {
+            addCategory(android.content.Intent.CATEGORY_HOME)
+        }
+        val resolveInfo = packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
+        return resolveInfo?.activityInfo?.packageName
     }
 
     private fun getCategory(context: Context, packageName: String): AppCategory {

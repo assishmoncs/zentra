@@ -7,12 +7,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.hsissa.zentra.R
 import com.hsissa.zentra.core.SettingsManager
 import com.hsissa.zentra.service.AppCategory
-import java.util.concurrent.Executors
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class SettingsFragment : Fragment() {
 
@@ -43,21 +46,20 @@ class SettingsFragment : Fragment() {
 
     private fun loadApps() {
         val pm = requireContext().packageManager
-        Executors.newSingleThreadExecutor().execute {
-            val installedApps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
-            val appItems = installedApps
-                .filter { it.flags and ApplicationInfo.FLAG_SYSTEM == 0 } // Filter out system apps
-                .map { appInfo ->
-                    val packageName = appInfo.packageName
-                    val appName = pm.getApplicationLabel(appInfo).toString()
-                    val icon = pm.getApplicationIcon(appInfo)
-                    val category = settingsManager.getAppCategory(packageName) ?: AppCategory.NEUTRAL
-                    AppItem(packageName, appName, icon, category)
-                }.sortedBy { it.appName }
-
-            activity?.runOnUiThread {
-                adapter.updateData(appItems)
+        viewLifecycleOwner.lifecycleScope.launch {
+            val appItems = withContext(Dispatchers.IO) {
+                val installedApps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
+                installedApps
+                    .filter { it.flags and ApplicationInfo.FLAG_SYSTEM == 0 } // Filter out system apps
+                    .map { appInfo ->
+                        val packageName = appInfo.packageName
+                        val appName = pm.getApplicationLabel(appInfo).toString()
+                        val icon = pm.getApplicationIcon(appInfo)
+                        val category = settingsManager.getAppCategory(packageName) ?: AppCategory.NEUTRAL
+                        AppItem(packageName, appName, icon, category)
+                    }.sortedBy { it.appName }
             }
+            adapter.updateData(appItems)
         }
     }
 

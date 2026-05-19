@@ -12,6 +12,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.hsissa.zentra.R
 import com.hsissa.zentra.core.ScoreManager
@@ -19,10 +20,11 @@ import com.hsissa.zentra.service.DailyUsageSummary
 import com.hsissa.zentra.service.TodayUsageResult
 import com.hsissa.zentra.service.UsageStatsHelper
 import com.hsissa.zentra.util.TimeFormatter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Locale
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import java.util.concurrent.Future
 
 class DashboardFragment : Fragment() {
 
@@ -49,8 +51,7 @@ class DashboardFragment : Fragment() {
     private var countDownTimer: CountDownTimer? = null
     private var isFocusRunning = false
 
-    private val usageExecutor: ExecutorService = Executors.newSingleThreadExecutor()
-    private var loadTask: Future<*>? = null
+    private var loadJob: Job? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -87,8 +88,7 @@ class DashboardFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        loadTask?.cancel(true)
-        usageExecutor.shutdownNow()
+        loadJob?.cancel()
         countDownTimer?.cancel()
         super.onDestroyView()
     }
@@ -132,44 +132,45 @@ class DashboardFragment : Fragment() {
     private fun loadAndDisplay() {
         showLoadingState()
 
-        loadTask?.cancel(true)
-        loadTask = usageExecutor.submit {
-            if (Thread.currentThread().isInterrupted) return@submit
-            val context = context ?: return@submit
-            val result = UsageStatsHelper.getTodaySummaryResult(context)
-            val weeklyResult = UsageStatsHelper.getSummaryResultForDays(context, 7)
+        loadJob?.cancel()
+        loadJob = viewLifecycleOwner.lifecycleScope.launch {
+            val context = context ?: return@launch
+            
+            val (result, weeklyResult) = withContext(Dispatchers.IO) {
+                val today = UsageStatsHelper.getTodaySummaryResult(context)
+                val weekly = UsageStatsHelper.getSummaryResultForDays(context, 7)
+                today to weekly
+            }
 
-            if (Thread.currentThread().isInterrupted) return@submit
-            activity?.runOnUiThread {
-                if (!isAdded) return@runOnUiThread
-                when (result) {
-                    is TodayUsageResult.Success -> {
-                        hideState()
-                        renderSummary(result.summary)
-                    }
-                    is TodayUsageResult.Empty -> {
-                        renderSummary(result.summary)
-                        if (result.isUnexpected) {
-                            showErrorState(
-                                getString(R.string.usage_state_unexpected_empty),
-                                showRetry = true,
-                            )
-                        } else {
-                            hideState()
-                        }
-                    }
-                    TodayUsageResult.Error -> {
-                        renderSummary(DailyUsageSummary.EMPTY)
+            if (!isAdded) return@launch
+
+            when (result) {
+                is TodayUsageResult.Success -> {
+                    hideState()
+                    renderSummary(result.summary)
+                }
+                is TodayUsageResult.Empty -> {
+                    renderSummary(result.summary)
+                    if (result.isUnexpected) {
                         showErrorState(
-                            getString(R.string.usage_state_error),
+                            getString(R.string.usage_state_unexpected_empty),
                             showRetry = true,
                         )
+                    } else {
+                        hideState()
                     }
                 }
-
-                if (weeklyResult is TodayUsageResult.Success) {
-                    renderWeeklyTrends(weeklyResult.summary)
+                TodayUsageResult.Error -> {
+                    renderSummary(DailyUsageSummary.EMPTY)
+                    showErrorState(
+                        getString(R.string.usage_state_error),
+                        showRetry = true,
+                    )
                 }
+            }
+
+            if (weeklyResult is TodayUsageResult.Success) {
+                renderWeeklyTrends(weeklyResult.summary)
             }
         }
     }

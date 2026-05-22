@@ -41,7 +41,7 @@ app/src/main/java/com/hsissa/zentra/
 
 1.  **Clone the repository**: `git clone https://github.com/hsissa/zentra.git`
 2.  **Open in Android Studio**: Sync Gradle and build the project.
-3.  **Deploy**: Run on an Android 8.0+ (API 26) device.
+3.  **Deploy**: Run on an Android 8.0+ (API 26) device. (Current Version: 2.0)
 4.  **Permissions**: Grant **Usage Access** when prompted to enable data tracking.
 
 ## 🧪 Testing

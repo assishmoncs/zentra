@@ -40,8 +40,24 @@
 
     <!-- Weekly Trends -->
     <string name="weekly_trends_title">WEEKLY TRENDS</string>
+    <string name="weekly_usage_trend">Weekly Usage Trend</string>
+    <string name="weekly_analytics">Weekly Analytics</string>
+    <string name="daily_breakdown">Daily Breakdown</string>
     <string name="weekly_avg_score">7-Day Average Focus: %1$d</string>
     <string name="weekly_total_time">Total Week Screen Time: %1$s</string>
+
+    <!-- Settings -->
+    <string name="settings_goals_title">GOALS</string>
+    <string name="settings_daily_goal_label">Daily Focus Target</string>
+    <string name="settings_daily_goal_desc">Try to keep your score above this target.</string>
+    <string name="settings_app_cat_title">APP CATEGORIZATION</string>
+    <string name="settings_app_cat_desc">Categorize apps to adjust how they impact your Focus Score. Distracting apps penalize your score 2x more than Productive apps.</string>
+    <string name="settings_select_category_title">Select Category for %1$s</string>
+    <string name="settings_downtime_title">DOWNTIME</string>
+    <string name="settings_quiet_hours_label">Quiet Hours</string>
+    <string name="settings_quiet_hours_desc">Reduce notifications and encourage off-screen time.</string>
+    <string name="settings_start_label">Start</string>
+    <string name="settings_end_label">End</string>
 
     <!-- Navigation -->
     <string name="title_dashboard">Dashboard</string>

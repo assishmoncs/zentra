@@ -4,8 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="8dp"
-    app:cardBackgroundColor="@color/bg_card"
-    app:cardCornerRadius="16dp"
+    app:cardBackgroundColor="@android:color/transparent"
+    app:cardCornerRadius="0dp"
     app:cardElevation="0dp"
     app:strokeWidth="0dp">
 
@@ -14,7 +14,8 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="16dp">
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="12dp">
 
         <ImageView
             android:id="@+id/ivAppIcon"
@@ -36,13 +37,6 @@
                 android:fontFamily="sans-serif-medium"
                 android:textColor="@color/text_primary"
                 android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/tvPackageName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/text_tertiary"
-                android:textSize="12sp" />
         </LinearLayout>
 
         <com.google.android.material.button.MaterialButton

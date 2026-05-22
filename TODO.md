@@ -16,8 +16,9 @@
 - [ ] **Settings Dashboard**
     - Dedicated screen to manage app categories (Productive vs. Distracting).
     - Toggle for Dynamic Color (Material You) support.
-- [ ] **Enhanced Visualizations**
+- [x] **Enhanced Visualizations**
     - Replace static text trends with interactive Sparklines or Bar Charts for weekly metrics.
+- [ ] **Enhanced Visualizations (Continued)**
     - Add Lottie animations for "Focus Session Complete" and "Daily Goal Reached" states.
 - [ ] **Responsive Layouts**
     - Optimize the card-based UI for tablets and foldable devices using WindowSizeClasses.

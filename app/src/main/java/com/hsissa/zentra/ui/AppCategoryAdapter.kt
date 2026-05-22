@@ -25,7 +25,6 @@ class AppCategoryAdapter(
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val ivIcon: ImageView = view.findViewById(R.id.ivAppIcon)
         val tvName: TextView = view.findViewById(R.id.tvAppName)
-        val tvPackage: TextView = view.findViewById(R.id.tvPackageName)
         val btnCategory: MaterialButton = view.findViewById(R.id.btnCategory)
     }
 
@@ -37,9 +36,8 @@ class AppCategoryAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val app = apps[position]
         holder.tvName.text = app.appName
-        holder.tvPackage.text = app.packageName
         holder.ivIcon.setImageDrawable(app.icon)
-        holder.btnCategory.text = app.category.name
+        holder.btnCategory.text = app.category.displayName
         holder.btnCategory.setOnClickListener { onCategoryClick(app) }
     }
 

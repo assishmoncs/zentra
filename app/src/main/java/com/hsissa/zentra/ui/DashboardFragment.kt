@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.hsissa.zentra.R
 import com.hsissa.zentra.core.ScoreManager
+import com.hsissa.zentra.core.SettingsManager
 import com.hsissa.zentra.service.DailyUsageSummary
 import com.hsissa.zentra.service.TodayUsageResult
 import com.hsissa.zentra.service.UsageStatsHelper
@@ -51,6 +52,7 @@ class DashboardFragment : Fragment() {
     private var countDownTimer: CountDownTimer? = null
     private var isFocusRunning = false
 
+    private lateinit var settingsManager: SettingsManager
     private var loadJob: Job? = null
 
     override fun onCreateView(
@@ -63,6 +65,7 @@ class DashboardFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        settingsManager = SettingsManager(requireContext())
         bindViews(view)
 
         btnGrantPermission.setOnClickListener {
@@ -193,19 +196,28 @@ class DashboardFragment : Fragment() {
     }
 
     private fun renderGoalStatus(currentScore: Int) {
-        if (currentScore >= DAILY_GOAL_SCORE) {
+        val dailyGoal = settingsManager.getDailyGoal()
+        if (currentScore >= dailyGoal) {
             tvGoalStatus.text = getString(R.string.goal_reached)
             tvGoalStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.score_high))
         } else {
-            val remaining = DAILY_GOAL_SCORE - currentScore
+            val remaining = dailyGoal - currentScore
             tvGoalStatus.text = getString(R.string.goal_remaining, remaining)
             tvGoalStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_secondary))
         }
     }
 
     private fun renderWeeklyTrends(weeklySummary: DailyUsageSummary) {
+        val dailyGoal = settingsManager.getDailyGoal()
         val avgScore = ScoreManager.computeScore(weeklySummary.weightedScreenTimeMillis / 7)
         tvWeeklyAvgScore.text = getString(R.string.weekly_avg_score, avgScore)
+        
+        if (avgScore >= dailyGoal) {
+            tvWeeklyAvgScore.setTextColor(ContextCompat.getColor(requireContext(), R.color.score_high))
+        } else {
+            tvWeeklyAvgScore.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_secondary))
+        }
+
         tvWeeklyTotalTime.text = getString(
             R.string.weekly_total_time,
             TimeFormatter.formatMillis(weeklySummary.totalScreenTimeMillis)
@@ -295,6 +307,5 @@ class DashboardFragment : Fragment() {
 
     companion object {
         private const val FOCUS_DURATION_MS = 25 * 60 * 1000L
-        private const val DAILY_GOAL_SCORE = 80
     }
 }

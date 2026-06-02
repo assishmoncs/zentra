@@ -106,16 +106,33 @@
             </com.google.android.material.card.MaterialCardView>
 
             <!-- App Categorization Section -->
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:fontFamily="sans-serif-black"
-                android:letterSpacing="0.2"
-                android:text="@string/settings_app_cat_title"
-                android:textAllCaps="true"
-                android:textColor="@color/text_tertiary"
-                android:textSize="11sp" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_weight="1"
+                    android:fontFamily="sans-serif-black"
+                    android:letterSpacing="0.2"
+                    android:text="@string/settings_app_cat_title"
+                    android:textAllCaps="true"
+                    android:textColor="@color/text_tertiary"
+                    android:textSize="11sp" />
+
+                <ImageButton
+                    android:id="@+id/btnHelp"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Help"
+                    android:src="@drawable/ic_help"
+                    app:tint="@color/text_tertiary" />
+            </LinearLayout>
 
             <TextView
                 android:layout_width="match_parent"
@@ -136,12 +153,26 @@
                 app:cardElevation="0dp"
                 app:strokeWidth="0dp">
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvAppCategories"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="false"
-                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+                    android:orientation="vertical">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvAppCategories"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnShowMore"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_show_more"
+                        android:textColor="@color/accent" />
+                </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <!-- Quiet Hours Section -->

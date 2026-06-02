@@ -185,7 +185,8 @@ object UsageStatsHelper {
                 weightedScreenTimeMillis = nonSystemUsage.sumOf { 
                     (it.totalTimeInForeground * getCategory(context, it.packageName).scoreWeight).toLong() 
                 },
-                topApps = emptyList() // We don't need top apps for the trend chart
+                topApps = emptyList(), // We don't need top apps for the trend chart
+                dayTimestamp = dayStart
             ))
 
             calendar.add(Calendar.DAY_OF_YEAR, -1)
@@ -308,7 +309,8 @@ data class DailyUsageSummary(
     val totalScreenTimeMillis: Long,
     val weightedScreenTimeMillis: Long,
     val topApps: List<AppUsageInfo>,
-    val fullUsageList: List<AppUsageInfo> = emptyList()
+    val fullUsageList: List<AppUsageInfo> = emptyList(),
+    val dayTimestamp: Long = 0L
 ) {
     companion object {
         val EMPTY = DailyUsageSummary(

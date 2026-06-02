@@ -48,6 +48,25 @@
                 android:layout_height="200dp"
                 android:layout_marginTop="24dp" />
 
+            <TextView
+                android:id="@+id/tvDetailDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif-bold"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/tvDetailStats"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="@color/accent"
+                android:textSize="13sp"
+                android:visibility="gone" />
+
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

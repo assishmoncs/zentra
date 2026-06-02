@@ -22,6 +22,8 @@ class InsightsFragment : Fragment() {
     private lateinit var trendChartView: TrendChartView
     private lateinit var tvWeeklyAvg: TextView
     private lateinit var tvWeeklyTotal: TextView
+    private lateinit var tvDetailDate: TextView
+    private lateinit var tvDetailStats: TextView
     private lateinit var rvDailyBreakdown: RecyclerView
     private lateinit var adapter: AppUsageAdapter
 
@@ -38,10 +40,26 @@ class InsightsFragment : Fragment() {
         trendChartView = view.findViewById(R.id.trendChartView)
         tvWeeklyAvg = view.findViewById(R.id.tvWeeklyAvg)
         tvWeeklyTotal = view.findViewById(R.id.tvWeeklyTotal)
+        tvDetailDate = view.findViewById(R.id.tvDetailDate)
+        tvDetailStats = view.findViewById(R.id.tvDetailStats)
         rvDailyBreakdown = view.findViewById(R.id.rvDailyBreakdown)
 
         adapter = AppUsageAdapter(emptyList())
         rvDailyBreakdown.adapter = adapter
+
+        trendChartView.onItemSelected = { summary ->
+            summary?.let {
+                val dateStr = TimeFormatter.formatDate(it.dayTimestamp)
+                tvDetailDate.text = getString(R.string.insight_detail_date, dateStr)
+                tvDetailStats.text = getString(
+                    R.string.insight_detail_stats,
+                    TimeFormatter.formatMillis(it.totalScreenTimeMillis),
+                    ScoreManager.computeScore(it.weightedScreenTimeMillis)
+                )
+                tvDetailStats.visibility = View.VISIBLE
+                tvDetailDate.visibility = View.VISIBLE
+            }
+        }
 
         loadInsights()
     }

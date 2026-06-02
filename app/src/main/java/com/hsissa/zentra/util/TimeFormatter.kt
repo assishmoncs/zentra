@@ -1,9 +1,15 @@
 package com.hsissa.zentra.util
 
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
 /**
  * Utility for formatting time durations.
  */
 object TimeFormatter {
+
+    private val dateFormat = SimpleDateFormat("MMM dd", Locale.getDefault())
 
     /**
      * Formats milliseconds into a human-readable string.
@@ -18,5 +24,9 @@ object TimeFormatter {
             hours > 0 -> "${hours}h ${minutes}m"
             else -> "${minutes}m"
         }
+    }
+
+    fun formatDate(timestamp: Long): String {
+        return dateFormat.format(Date(timestamp))
     }
 }

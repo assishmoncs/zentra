@@ -45,8 +45,14 @@
     <string name="daily_breakdown">Daily Breakdown</string>
     <string name="weekly_avg_score">7-Day Average Focus: %1$d</string>
     <string name="weekly_total_time">Total Week Screen Time: %1$s</string>
+    <string name="insight_detail_date">Stats for %1$s</string>
+    <string name="insight_detail_stats">Screen Time: %1$s  |  Score: %2$d</string>
 
     <!-- Settings -->
+    <string name="settings_help_title">Help</string>
+    <string name="settings_help_content"><b>Focus Score Guide</b>\n\nYour Focus Score is calculated based on how you spend your time. Apps are categorized to weigh their impact:\n\n• <b>Productive (0.2x):</b> These apps have minimal negative impact. Ideal for work or learning.\n• <b>Neutral (1.0x):</b> Standard impact on your score.\n• <b>Distracting (2.0x):</b> These apps penalize your score twice as much. Use these mindfully.\n\n<b>Goal:</b> Keep your daily score above your target to maintain digital wellness.</string>
+    <string name="settings_show_more">Show More Apps</string>
+    <string name="settings_search_apps_hint">Search apps…</string>
     <string name="settings_goals_title">GOALS</string>
     <string name="settings_daily_goal_label">Daily Focus Target</string>
     <string name="settings_daily_goal_desc">Try to keep your score above this target.</string>

@@ -16,6 +16,10 @@ import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import java.util.Locale
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import androidx.core.widget.addTextChangedListener
+import com.google.android.material.textfield.TextInputEditText
+import android.widget.ImageButton
+import android.text.Html
 import com.hsissa.zentra.R
 import com.hsissa.zentra.core.SettingsManager
 import com.hsissa.zentra.service.AppCategory
@@ -34,6 +38,10 @@ class SettingsFragment : Fragment() {
     private lateinit var tvStartTime: TextView
     private lateinit var tvEndTime: TextView
     private lateinit var layoutTimePickers: View
+    private lateinit var btnShowMore: View
+    private lateinit var btnHelp: ImageButton
+
+    private var allApps: List<AppItem> = emptyList()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -53,9 +61,19 @@ class SettingsFragment : Fragment() {
         tvStartTime = view.findViewById(R.id.tvStartTime)
         tvEndTime = view.findViewById(R.id.tvEndTime)
         layoutTimePickers = view.findViewById(R.id.layoutTimePickers)
+        btnShowMore = view.findViewById(R.id.btnShowMore)
+        btnHelp = view.findViewById(R.id.btnHelp)
 
         setupGoalSlider()
         setupQuietHours()
+
+        btnHelp.setOnClickListener {
+            showHelpDialog()
+        }
+
+        btnShowMore.setOnClickListener {
+            showSearchDialog()
+        }
 
         adapter = AppCategoryAdapter(emptyList()) { app ->
             showCategoryPicker(app)
@@ -63,6 +81,36 @@ class SettingsFragment : Fragment() {
         rvApps.adapter = adapter
 
         loadApps()
+    }
+
+    private fun showHelpDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.settings_help_title)
+            .setMessage(Html.fromHtml(getString(R.string.settings_help_content), Html.FROM_HTML_MODE_COMPACT))
+            .setPositiveButton("Got it", null)
+            .show()
+    }
+
+    private fun showSearchDialog() {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_app_search, null)
+        val rvSearch = dialogView.findViewById<RecyclerView>(R.id.rvSearchApps)
+        val etSearch = dialogView.findViewById<TextInputEditText>(R.id.etSearch)
+
+        val searchAdapter = AppCategoryAdapter(allApps) { app ->
+            showCategoryPicker(app)
+        }
+        rvSearch.adapter = searchAdapter
+
+        etSearch.addTextChangedListener { text ->
+            val query = text.toString().lowercase()
+            val filtered = allApps.filter { it.appName.lowercase().contains(query) }
+            searchAdapter.updateData(filtered)
+        }
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setView(dialogView)
+            .setPositiveButton("Close", null)
+            .show()
     }
 
     private fun setupGoalSlider() {
@@ -145,7 +193,8 @@ class SettingsFragment : Fragment() {
                         AppItem(packageName, appName, icon, category)
                     }.sortedBy { it.appName }
             }
-            adapter.updateData(appItems)
+            allApps = appItems
+            adapter.updateData(appItems.take(5))
         }
     }
 

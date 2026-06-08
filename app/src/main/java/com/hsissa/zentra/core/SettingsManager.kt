@@ -2,13 +2,25 @@ package com.hsissa.zentra.core
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKeys
 import com.hsissa.zentra.service.AppCategory
 
 /**
  * Manages user preferences including custom app categories and goals.
+ * Uses EncryptedSharedPreferences for secure storage of user settings.
  */
 class SettingsManager(context: Context) {
-    private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    private val prefs: SharedPreferences by lazy {
+        val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+        EncryptedSharedPreferences.create(
+            PREFS_NAME,
+            masterKeyAlias,
+            context,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+    }
 
     fun setAppCategory(packageName: String, category: AppCategory) {
         prefs.edit().putString(KEY_PREFIX_CATEGORY + packageName, category.name).apply()

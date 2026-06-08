@@ -3,156 +3,143 @@ package com.hsissa.zentra.ui
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.text.Html
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.RecyclerView
-import android.widget.TextView
-import com.google.android.material.materialswitch.MaterialSwitch
-import com.google.android.material.slider.Slider
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
-import java.util.Locale
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import androidx.core.widget.addTextChangedListener
-import com.google.android.material.textfield.TextInputEditText
-import android.widget.ImageButton
-import android.text.Html
 import com.hsissa.zentra.R
 import com.hsissa.zentra.core.SettingsManager
+import com.hsissa.zentra.databinding.DialogAppSearchBinding
+import com.hsissa.zentra.databinding.FragmentSettingsBinding
 import com.hsissa.zentra.service.AppCategory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.Locale
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class SettingsFragment : Fragment() {
 
-    private lateinit var rvApps: RecyclerView
+    private var _binding: FragmentSettingsBinding? = null
+    private val binding get() = _binding!!
+
     private lateinit var adapter: AppCategoryAdapter
     private lateinit var settingsManager: SettingsManager
-    private lateinit var sliderGoal: Slider
-    private lateinit var tvGoalValue: TextView
-    private lateinit var switchQuietHours: MaterialSwitch
-    private lateinit var tvStartTime: TextView
-    private lateinit var tvEndTime: TextView
-    private lateinit var layoutTimePickers: View
-    private lateinit var btnShowMore: View
-    private lateinit var btnHelp: ImageButton
-
     private var allApps: List<AppItem> = emptyList()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_settings, container, false)
+    ): View {
+        _binding = FragmentSettingsBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        rvApps = view.findViewById(R.id.rvAppCategories)
         settingsManager = SettingsManager(requireContext())
-        sliderGoal = view.findViewById(R.id.sliderGoal)
-        tvGoalValue = view.findViewById(R.id.tvGoalValue)
-        switchQuietHours = view.findViewById(R.id.switchQuietHours)
-        tvStartTime = view.findViewById(R.id.tvStartTime)
-        tvEndTime = view.findViewById(R.id.tvEndTime)
-        layoutTimePickers = view.findViewById(R.id.layoutTimePickers)
-        btnShowMore = view.findViewById(R.id.btnShowMore)
-        btnHelp = view.findViewById(R.id.btnHelp)
 
         setupGoalSlider()
         setupQuietHours()
+        setupClickListeners()
+        setupRecyclerView()
 
-        btnHelp.setOnClickListener {
+        loadApps()
+    }
+
+    private fun setupClickListeners() {
+        binding.btnHelp.setOnClickListener {
             showHelpDialog()
         }
 
-        btnShowMore.setOnClickListener {
+        binding.btnShowMore.setOnClickListener {
             showSearchDialog()
         }
 
+        binding.btnStartTime.setOnClickListener {
+            showTimePicker(true)
+        }
+
+        binding.btnEndTime.setOnClickListener {
+            showTimePicker(false)
+        }
+    }
+
+    private fun setupRecyclerView() {
         adapter = AppCategoryAdapter(emptyList()) { app ->
             showCategoryPicker(app)
         }
-        rvApps.adapter = adapter
-
-        loadApps()
+        binding.rvAppCategories.adapter = adapter
     }
 
     private fun showHelpDialog() {
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.settings_help_title)
             .setMessage(Html.fromHtml(getString(R.string.settings_help_content), Html.FROM_HTML_MODE_COMPACT))
-            .setPositiveButton("Got it", null)
+            .setPositiveButton(android.R.string.ok, null)
             .show()
     }
 
     private fun showSearchDialog() {
-        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_app_search, null)
-        val rvSearch = dialogView.findViewById<RecyclerView>(R.id.rvSearchApps)
-        val etSearch = dialogView.findViewById<TextInputEditText>(R.id.etSearch)
-
+        val dialogBinding = DialogAppSearchBinding.inflate(layoutInflater)
+        
         val searchAdapter = AppCategoryAdapter(allApps) { app ->
             showCategoryPicker(app)
         }
-        rvSearch.adapter = searchAdapter
+        dialogBinding.rvSearchApps.adapter = searchAdapter
 
-        etSearch.addTextChangedListener { text ->
+        dialogBinding.etSearch.addTextChangedListener { text ->
             val query = text.toString().lowercase()
             val filtered = allApps.filter { it.appName.lowercase().contains(query) }
             searchAdapter.updateData(filtered)
         }
 
         MaterialAlertDialogBuilder(requireContext())
-            .setView(dialogView)
-            .setPositiveButton("Close", null)
+            .setView(dialogBinding.root)
+            .setPositiveButton(R.string.retry, null) // Reusing "Retry" as "Close" if needed or use android.R.string.ok
             .show()
     }
 
     private fun setupGoalSlider() {
         val currentGoal = settingsManager.getDailyGoal()
-        sliderGoal.value = currentGoal.toFloat()
-        tvGoalValue.text = currentGoal.toString()
+        binding.sliderGoal.value = currentGoal.toFloat()
+        binding.tvGoalValue.text = currentGoal.toString()
 
-        sliderGoal.addOnChangeListener { _, value, _ ->
+        binding.sliderGoal.addOnChangeListener { _, value, _ ->
             val goal = value.toInt()
             settingsManager.setDailyGoal(goal)
-            tvGoalValue.text = goal.toString()
+            binding.tvGoalValue.text = goal.toString()
         }
     }
 
     private fun setupQuietHours() {
-        switchQuietHours.isChecked = settingsManager.isQuietHoursEnabled()
-        updateQuietHoursUi(switchQuietHours.isChecked)
+        binding.switchQuietHours.isChecked = settingsManager.isQuietHoursEnabled()
+        updateQuietHoursUi(binding.switchQuietHours.isChecked)
 
         val (startH, startM) = settingsManager.getQuietHoursStart()
-        tvStartTime.text = String.format(Locale.getDefault(), "%02d:%02d", startH, startM)
+        binding.tvStartTime.text = String.format(Locale.getDefault(), "%02d:%02d", startH, startM)
 
         val (endH, endM) = settingsManager.getQuietHoursEnd()
-        tvEndTime.text = String.format(Locale.getDefault(), "%02d:%02d", endH, endM)
+        binding.tvEndTime.text = String.format(Locale.getDefault(), "%02d:%02d", endH, endM)
 
-        switchQuietHours.setOnCheckedChangeListener { _, isChecked ->
+        binding.switchQuietHours.setOnCheckedChangeListener { _, isChecked ->
             settingsManager.setQuietHoursEnabled(isChecked)
             updateQuietHoursUi(isChecked)
-        }
-
-        view?.findViewById<View>(R.id.btnStartTime)?.setOnClickListener {
-            showTimePicker(true)
-        }
-
-        view?.findViewById<View>(R.id.btnEndTime)?.setOnClickListener {
-            showTimePicker(false)
         }
     }
 
     private fun updateQuietHoursUi(enabled: Boolean) {
-        layoutTimePickers.alpha = if (enabled) 1.0f else 0.5f
-        view?.findViewById<View>(R.id.btnStartTime)?.isEnabled = enabled
-        view?.findViewById<View>(R.id.btnEndTime)?.isEnabled = enabled
+        binding.layoutTimePickers.alpha = if (enabled) 1.0f else 0.5f
+        binding.btnStartTime.isEnabled = enabled
+        binding.btnEndTime.isEnabled = enabled
     }
 
     private fun showTimePicker(isStart: Boolean) {
@@ -168,10 +155,10 @@ class SettingsFragment : Fragment() {
         picker.addOnPositiveButtonClickListener {
             if (isStart) {
                 settingsManager.setQuietHoursStart(picker.hour, picker.minute)
-                tvStartTime.text = String.format(Locale.getDefault(), "%02d:%02d", picker.hour, picker.minute)
+                binding.tvStartTime.text = String.format(Locale.getDefault(), "%02d:%02d", picker.hour, picker.minute)
             } else {
                 settingsManager.setQuietHoursEnd(picker.hour, picker.minute)
-                tvEndTime.text = String.format(Locale.getDefault(), "%02d:%02d", picker.hour, picker.minute)
+                binding.tvEndTime.text = String.format(Locale.getDefault(), "%02d:%02d", picker.hour, picker.minute)
             }
         }
 
@@ -184,7 +171,7 @@ class SettingsFragment : Fragment() {
             val appItems = withContext(Dispatchers.IO) {
                 val installedApps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
                 installedApps
-                    .filter { it.flags and ApplicationInfo.FLAG_SYSTEM == 0 } // Filter out system apps
+                    .filter { it.flags and ApplicationInfo.FLAG_SYSTEM == 0 }
                     .map { appInfo ->
                         val packageName = appInfo.packageName
                         val appName = pm.getApplicationLabel(appInfo).toString()
@@ -199,7 +186,7 @@ class SettingsFragment : Fragment() {
     }
 
     private fun showCategoryPicker(app: AppItem) {
-        val categories = AppCategory.values().filter { it != AppCategory.SYSTEM }
+        val categories = AppCategory.entries.filter { it != AppCategory.SYSTEM }
         val names = categories.map { it.displayName }.toTypedArray()
 
         MaterialAlertDialogBuilder(requireContext())
@@ -212,5 +199,9 @@ class SettingsFragment : Fragment() {
             }
             .show()
     }
-}
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}

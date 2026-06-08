@@ -6,8 +6,10 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.hsissa.zentra.service.MindfulnessWorker
 import com.hsissa.zentra.util.NotificationHelper
+import dagger.hilt.android.HiltAndroidApp
 import java.util.concurrent.TimeUnit
 
+@HiltAndroidApp
 class ZentraApplication : Application() {
 
     override fun onCreate() {

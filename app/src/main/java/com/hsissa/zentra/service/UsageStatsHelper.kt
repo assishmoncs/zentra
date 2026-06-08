@@ -87,18 +87,8 @@ object UsageStatsHelper {
             val aggregatedStats = mutableMapOf<String, Long>()
             
             if (daysCount == 1) {
-                // For today, rely heavily on Events for real-time accuracy.
+                // For today, rely on Events for real-time accuracy and local midnight alignment.
                 aggregatedStats.putAll(getUsageFromEvents(usageStatsManager, startTime, now))
-                
-                // Supplement with queryUsageStats for apps that were already open at startTime.
-                val dailyStats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, startTime, now)
-                dailyStats?.forEach { stats ->
-                    val pkg = stats.packageName
-                    val time = stats.totalTimeInForeground
-                    if (time > (aggregatedStats[pkg] ?: 0L)) {
-                        aggregatedStats[pkg] = time
-                    }
-                }
             } else {
                 // For multiple days, use queryAndAggregate which is efficient for historical data.
                 usageStatsManager.queryAndAggregateUsageStats(startTime, now).forEach { (pkg, stats) ->
@@ -131,7 +121,7 @@ object UsageStatsHelper {
             val nonSystemUsage = usageList.filter { it.category != AppCategory.SYSTEM }
 
             val summary = DailyUsageSummary(
-                totalScreenTimeMillis = nonSystemUsage.sumOf { it.totalTimeMillis },
+                totalScreenTimeMillis = usageList.sumOf { it.totalTimeMillis },
                 weightedScreenTimeMillis = nonSystemUsage.sumOf { (it.totalTimeMillis * it.category.scoreWeight).toLong() },
                 topApps = nonSystemUsage.take(MAX_TOP_APPS),
                 fullUsageList = nonSystemUsage
@@ -151,7 +141,57 @@ object UsageStatsHelper {
     }
 
     /**
-     * Fetches daily usage summary for the last N days, returned as a list per day.
+     * Fetches daily usage summary for a specific day.
+     */
+    fun getSummaryForDay(context: Context, dayStart: Long, dayEnd: Long): DailyUsageSummary {
+        if (!hasUsagePermission(context)) return DailyUsageSummary.EMPTY
+
+        val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        val packageManager = context.packageManager
+        val launcherPackage = getLauncherPackageName(packageManager)
+
+        val aggregatedStats = getUsageFromEvents(usageStatsManager, dayStart, dayEnd)
+
+        val nonSystemUsage = aggregatedStats.filter { (pkg, time) ->
+            time > 0 && 
+            pkg != context.packageName &&
+            !isSystemApp(packageManager, pkg) &&
+            pkg != launcherPackage &&
+            pkg != "com.android.systemui" &&
+            pkg != "android" &&
+            !pkg.lowercase().contains("launcher") &&
+            pkg != "com.google.android.googlequicksearchbox"
+        }
+
+        val totalScreenTime = aggregatedStats.entries
+            .filter { it.key != context.packageName && it.value > 0 }
+            .sumOf { it.value }
+
+        val topAppsList = nonSystemUsage.entries
+            .map { (pkg, time) ->
+                val appName = resolveAppName(packageManager, pkg)
+                AppUsageInfo(
+                    packageName = pkg,
+                    appName = appName,
+                    totalTimeMillis = time,
+                    category = getCategory(context, pkg)
+                )
+            }
+            .sortedByDescending { it.totalTimeMillis }
+            .take(MAX_TOP_APPS)
+
+        return DailyUsageSummary(
+            totalScreenTimeMillis = totalScreenTime,
+            weightedScreenTimeMillis = nonSystemUsage.entries.sumOf { (pkg, time) ->
+                (time * getCategory(context, pkg).scoreWeight).toLong()
+            },
+            topApps = topAppsList,
+            dayTimestamp = dayStart
+        )
+    }
+
+    /**
+     * Fetches daily usage summary for the last 7 days.
      */
     fun getWeeklyTrend(context: Context): List<DailyUsageSummary> {
         if (!hasUsagePermission(context)) return emptyList()
@@ -166,26 +206,60 @@ object UsageStatsHelper {
             set(Calendar.MILLISECOND, 0)
         }
 
+        val packageManager = context.packageManager
+        val launcherPackage = getLauncherPackageName(packageManager)
+
+        val appNameCache = mutableMapOf<String, String>()
+        val categoryCache = mutableMapOf<String, AppCategory>()
+        val isSystemCache = mutableMapOf<String, Boolean>()
+
+        // Iterate backwards from today
         for (i in 0 until 7) {
             val dayStart = calendar.timeInMillis
-            calendar.add(Calendar.DAY_OF_YEAR, 1)
-            val dayEnd = calendar.timeInMillis
-            calendar.add(Calendar.DAY_OF_YEAR, -1) // reset for next iteration
+            val endCal = calendar.clone() as Calendar
+            endCal.add(Calendar.DAY_OF_YEAR, 1)
+            val dayEnd = if (i == 0) System.currentTimeMillis() else endCal.timeInMillis - 1
+            
+            // Use the accurate event-based method for all days to avoid timezone/bucket issues
+            val aggregatedStats = getUsageFromEvents(usageStatsManager, dayStart, dayEnd)
 
-            // For historical days, queryUsageStats is usually fine
-            val stats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, dayStart, dayEnd)
-            val nonSystemUsage = stats.filter { 
-                !isSystemApp(context.packageManager, it.packageName) && 
-                it.packageName != context.packageName &&
-                it.totalTimeInForeground > 0
+            val nonSystemUsage = aggregatedStats.filter { (pkg, time) ->
+                val isSys = isSystemCache.getOrPut(pkg) { isSystemApp(packageManager, pkg) }
+                time > 0 && 
+                pkg != context.packageName &&
+                !isSys &&
+                pkg != launcherPackage &&
+                pkg != "com.android.systemui" &&
+                pkg != "android" &&
+                !pkg.lowercase().contains("launcher") &&
+                pkg != "com.google.android.googlequicksearchbox"
             }
 
+            val totalScreenTime = aggregatedStats.entries
+                .filter { it.key != context.packageName && it.value > 0 }
+                .sumOf { it.value }
+
+            val topAppsList = nonSystemUsage.entries
+                .map { (pkg, time) ->
+                    val appName = appNameCache.getOrPut(pkg) { resolveAppName(packageManager, pkg) }
+                    val category = categoryCache.getOrPut(pkg) { getCategory(context, pkg) }
+                    AppUsageInfo(
+                        packageName = pkg,
+                        appName = appName,
+                        totalTimeMillis = time,
+                        category = category
+                    )
+                }
+                .sortedByDescending { it.totalTimeMillis }
+                .take(MAX_TOP_APPS)
+
             results.add(DailyUsageSummary(
-                totalScreenTimeMillis = nonSystemUsage.sumOf { it.totalTimeInForeground },
-                weightedScreenTimeMillis = nonSystemUsage.sumOf { 
-                    (it.totalTimeInForeground * getCategory(context, it.packageName).scoreWeight).toLong() 
+                totalScreenTimeMillis = totalScreenTime,
+                weightedScreenTimeMillis = nonSystemUsage.entries.sumOf { (pkg, time) ->
+                    val category = categoryCache.getOrPut(pkg) { getCategory(context, pkg) }
+                    (time * category.scoreWeight).toLong()
                 },
-                topApps = emptyList(), // We don't need top apps for the trend chart
+                topApps = topAppsList,
                 dayTimestamp = dayStart
             ))
 
@@ -196,34 +270,70 @@ object UsageStatsHelper {
     }
 
     private fun getUsageFromEvents(usm: UsageStatsManager, startTime: Long, endTime: Long): Map<String, Long> {
-        val events = usm.queryEvents(startTime, endTime)
         val stats = mutableMapOf<String, Long>()
-        val startTimes = mutableMapOf<String, Long>()
-
         val event = UsageEvents.Event()
-        while (events.hasNextEvent()) {
-            events.getNextEvent(event)
-            val packageName = event.packageName
-            // Use both MOVE_TO (old) and ACTIVITY_ (new) events for maximum compatibility
+        
+        var currentApp: String? = null
+        var lastTime = startTime
+
+        // 1. Determine the active app at startTime by looking back up to 24h
+        val preEvents = usm.queryEvents(startTime - 24 * 60 * 60 * 1000L, startTime)
+        while (preEvents.hasNextEvent()) {
+            preEvents.getNextEvent(event)
             when (event.eventType) {
-                1, 10 -> startTimes[packageName] = event.timeStamp // MOVE_TO_FOREGROUND, ACTIVITY_RESUMED
-                2, 11 -> { // MOVE_TO_BACKGROUND, ACTIVITY_PAUSED
-                    val start = startTimes.remove(packageName)
-                    if (start != null) {
-                        val duration = event.timeStamp - start
-                        if (duration > 0) {
-                            stats[packageName] = (stats[packageName] ?: 0L) + duration
-                        }
-                    }
-                }
+                UsageEvents.Event.ACTIVITY_RESUMED,
+                UsageEvents.Event.MOVE_TO_FOREGROUND -> currentApp = event.packageName
+                UsageEvents.Event.ACTIVITY_PAUSED,
+                UsageEvents.Event.MOVE_TO_BACKGROUND -> if (currentApp == event.packageName) currentApp = null
+                UsageEvents.Event.SCREEN_NON_INTERACTIVE,
+                26, 27 -> currentApp = null
             }
         }
+
+        // 2. Process events in range using a single-foreground-app model to prevent double counting
+        val events = usm.queryEvents(startTime, endTime)
+        while (events.hasNextEvent()) {
+            events.getNextEvent(event)
+            val now = event.timeStamp
+            
+            // Abrupt shutdown recovery (DEVICE_STARTUP = 27)
+            if (event.eventType == 27) {
+                currentApp = null
+                lastTime = maxOf(lastTime, now)
+                continue
+            }
+
+            if (currentApp != null) {
+                val duration = now - lastTime
+                if (duration > 0) {
+                    stats[currentApp!!] = (stats[currentApp!!] ?: 0L) + duration
+                }
+            }
+
+            when (event.eventType) {
+                UsageEvents.Event.ACTIVITY_RESUMED,
+                UsageEvents.Event.MOVE_TO_FOREGROUND -> {
+                    currentApp = event.packageName
+                }
+                UsageEvents.Event.ACTIVITY_PAUSED,
+                UsageEvents.Event.MOVE_TO_BACKGROUND -> {
+                    if (currentApp == event.packageName) {
+                        currentApp = null
+                    }
+                }
+                UsageEvents.Event.SCREEN_NON_INTERACTIVE,
+                26 -> { // DEVICE_SHUTDOWN = 26
+                    currentApp = null
+                }
+            }
+            lastTime = maxOf(lastTime, now)
+        }
         
-        // App currently in foreground
-        for ((packageName, start) in startTimes) {
-            val duration = endTime - start
+        // 3. Final session until the end of the requested period
+        if (currentApp != null) {
+            val duration = endTime - lastTime
             if (duration > 0) {
-                stats[packageName] = (stats[packageName] ?: 0L) + duration
+                stats[currentApp!!] = (stats[currentApp!!] ?: 0L) + duration
             }
         }
         
@@ -233,9 +343,19 @@ object UsageStatsHelper {
     private fun isSystemApp(pm: PackageManager, packageName: String): Boolean {
         return try {
             val appInfo = pm.getApplicationInfo(packageName, 0)
-            (appInfo.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0
-        } catch (_: Exception) {
+            val isSystem = (appInfo.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0
+            val isUpdatedSystem = (appInfo.flags and android.content.pm.ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
+            val hasLauncher = pm.getLaunchIntentForPackage(packageName) != null
+            
+            // Filter out apps without launcher icons (background services/system components)
+            if (!hasLauncher) return true
+            
+            // Special cases for common UI components that have launcher intents but aren't "apps"
+            if (packageName == "com.android.settings") return false // We want to track settings usage
+            
             false
+        } catch (_: Exception) {
+            true
         }
     }
 

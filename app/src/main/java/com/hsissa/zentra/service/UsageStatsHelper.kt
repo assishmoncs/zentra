@@ -19,7 +19,7 @@ object UsageStatsHelper {
      * Returns true if the PACKAGE_USAGE_STATS permission has been granted.
      */
     fun hasUsagePermission(context: Context): Boolean {
-        val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as? AppOpsManager ?: return false
+        val appOps = (context.getSystemService(Context.APP_OPS_SERVICE) as? AppOpsManager) ?: return false
         val mode = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
             appOps.unsafeCheckOpNoThrow(
                 AppOpsManager.OPSTR_GET_USAGE_STATS,
@@ -163,7 +163,7 @@ object UsageStatsHelper {
             pkg != "com.google.android.googlequicksearchbox"
         }
 
-        val totalScreenTime = aggregatedStats.entries
+        val totalScreenTime = aggregatedStats.entries.asSequence()
             .filter { it.key != context.packageName && it.value > 0 }
             .sumOf { it.value }
 
@@ -253,15 +253,17 @@ object UsageStatsHelper {
                 .sortedByDescending { it.totalTimeMillis }
                 .take(MAX_TOP_APPS)
 
-            results.add(DailyUsageSummary(
-                totalScreenTimeMillis = totalScreenTime,
-                weightedScreenTimeMillis = nonSystemUsage.entries.sumOf { (pkg, time) ->
-                    val category = categoryCache.getOrPut(pkg) { getCategory(context, pkg) }
-                    (time * category.scoreWeight).toLong()
-                },
-                topApps = topAppsList,
-                dayTimestamp = dayStart
-            ))
+            results.add(
+                DailyUsageSummary(
+                    totalScreenTimeMillis = totalScreenTime,
+                    weightedScreenTimeMillis = nonSystemUsage.entries.sumOf { (pkg, time) ->
+                        val category = categoryCache.getOrPut(pkg) { getCategory(context, pkg) }
+                        (time * category.scoreWeight).toLong()
+                    },
+                    topApps = topAppsList,
+                    dayTimestamp = dayStart
+                )
+            )
 
             calendar.add(Calendar.DAY_OF_YEAR, -1)
         }
@@ -281,12 +283,11 @@ object UsageStatsHelper {
         while (preEvents.hasNextEvent()) {
             preEvents.getNextEvent(event)
             when (event.eventType) {
-                UsageEvents.Event.ACTIVITY_RESUMED,
-                UsageEvents.Event.MOVE_TO_FOREGROUND -> currentApp = event.packageName
-                UsageEvents.Event.ACTIVITY_PAUSED,
-                UsageEvents.Event.MOVE_TO_BACKGROUND -> if (currentApp == event.packageName) currentApp = null
+                UsageEvents.Event.ACTIVITY_RESUMED -> currentApp = event.packageName
+                UsageEvents.Event.ACTIVITY_PAUSED -> if (currentApp == event.packageName) currentApp = null
                 UsageEvents.Event.SCREEN_NON_INTERACTIVE,
-                26, 27 -> currentApp = null
+                26,
+                27 -> currentApp = null
             }
         }
 
@@ -306,17 +307,16 @@ object UsageStatsHelper {
             if (currentApp != null) {
                 val duration = now - lastTime
                 if (duration > 0) {
-                    stats[currentApp!!] = (stats[currentApp!!] ?: 0L) + duration
+                    val app = currentApp
+                    stats[app] = (stats[app] ?: 0L) + duration
                 }
             }
 
             when (event.eventType) {
-                UsageEvents.Event.ACTIVITY_RESUMED,
-                UsageEvents.Event.MOVE_TO_FOREGROUND -> {
+                UsageEvents.Event.ACTIVITY_RESUMED -> {
                     currentApp = event.packageName
                 }
-                UsageEvents.Event.ACTIVITY_PAUSED,
-                UsageEvents.Event.MOVE_TO_BACKGROUND -> {
+                UsageEvents.Event.ACTIVITY_PAUSED -> {
                     if (currentApp == event.packageName) {
                         currentApp = null
                     }
@@ -333,7 +333,8 @@ object UsageStatsHelper {
         if (currentApp != null) {
             val duration = endTime - lastTime
             if (duration > 0) {
-                stats[currentApp!!] = (stats[currentApp!!] ?: 0L) + duration
+                val app = currentApp
+                stats[app] = (stats[app] ?: 0L) + duration
             }
         }
         
@@ -342,9 +343,6 @@ object UsageStatsHelper {
 
     private fun isSystemApp(pm: PackageManager, packageName: String): Boolean {
         return try {
-            val appInfo = pm.getApplicationInfo(packageName, 0)
-            val isSystem = (appInfo.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0
-            val isUpdatedSystem = (appInfo.flags and android.content.pm.ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
             val hasLauncher = pm.getLaunchIntentForPackage(packageName) != null
             
             // Filter out apps without launcher icons (background services/system components)

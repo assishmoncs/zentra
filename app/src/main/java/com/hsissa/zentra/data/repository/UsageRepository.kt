@@ -50,7 +50,7 @@ class UsageRepository(
                 val type = object : TypeToken<List<AppUsageInfo>>() {}.type
                 val topApps: List<AppUsageInfo> = try {
                     gson.fromJson(cachedRecord.topAppsJson, type) ?: emptyList()
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     emptyList()
                 }
 

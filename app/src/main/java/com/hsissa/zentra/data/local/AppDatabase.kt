@@ -5,7 +5,16 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [UsageRecord::class], version = 1, exportSchema = false)
+@Database(
+    entities = [
+        UsageRecord::class,
+        FocusStreakEntity::class,
+        AppLimitEntity::class,
+        FocusSessionEntity::class
+    ],
+    version = 2,
+    exportSchema = false
+)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun usageDao(): UsageDao
 
@@ -19,7 +28,9 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "zentra_database"
-                ).build()
+                )
+                .fallbackToDestructiveMigration()
+                .build()
                 INSTANCE = instance
                 instance
             }

@@ -1,56 +1,95 @@
-# Zentra
+# Zentra 🌿
 
-Zentra is a modern Android productivity companion designed to foster mindful digital usage through data-driven insights and focused work sessions. Built with Material 3, it transforms device usage statistics into a meaningful **Focus Score**, helping users reclaim their time.
+**Zentra** is a state-of-the-art Android digital wellbeing and productivity platform designed to foster intentional device usage through data-driven analytics, real-time mindfulness interventions, and background-resilient focus sessions.
 
-## 🚀 Key Features
+Built with **Modern Android Development (MAD)** standards, Zentra transforms Android's system usage statistics into a weighted **Focus Score**, empowering users to regain control of their digital habits.
 
--   **Intelligent Focus Scoring**: A weighted scoring model that distinguishes between Productive and Distracting apps.
--   **Zen Mode (Focus Sessions)**: Built-in Pomodoro-style timer (25-minute default) to facilitate deep work.
--   **Weekly Trends**: Comprehensive 7-day analytics showing focus patterns and screen time metrics.
--   **Daily Goals**: Set and track personalized daily focus targets (Default: 80 points).
--   **Real-time Insights**: View total screen time and top-used apps with high-precision tracking.
+---
 
-## 🧠 Core Philosophy
+## ✨ Key Features
 
-Zentra operates on a weighted usage model to calculate your **Focus Score (0-100)**:
+- 🎯 **Weighted Focus Scoring Engine**: Evaluates screen time using a penalty-decay formula that differentiates between *Productive* (20% weight), *Neutral* (100% weight), and *Distracting* (200% weight) applications.
+- ⏱️ **Background-Resilient Focus Sessions**: Integrated Pomodoro & Deep Focus timer backed by a dedicated Android **Foreground Service** with persistent status notifications.
+- 🧘 **Mindfulness Interventions & App Quotas**: Custom daily app limits that trigger a 5-second breathing pause overlay (`MindfulnessOverlayActivity`) when thresholds are reached.
+- 📊 **Visual Analytics**: Custom-rendered `CategoryPieChartView` donut distribution and 7-day historical `TrendChartView` bar graphs with goal target indicators.
+- 🔥 **Focus Streaks & History**: Persisted tracking of daily goal achievements, active focus streaks, and total focus minutes logged.
+- 📱 **System UI Integration**:
+  - **Home Screen Widget**: Live widget displaying real-time Focus Score and 1-tap launcher.
+  - **Quick Settings Tile**: Android System Shade tile for instant Focus Session toggling.
+- 🔒 **Encrypted Preferences & Offline-First Caching**: Sensitive user preferences encrypted via `EncryptedSharedPreferences` and local data cached in **Room Database**.
 
--   **Productive Apps**: Low impact on score (20% weight).
--   **Neutral Apps**: Standard impact (100% weight).
--   **Distracting Apps**: High impact (200% weight).
+---
 
-The score encourages a balanced digital diet by penalizing time spent on distractions more heavily than time spent on tools for growth and work.
+## 🛠 Architectural Stack & Technical Overview
 
-## 🛠 Tech Stack
+Zentra is architected following Google's **Clean Architecture & MVVM** guidelines:
 
--   **Language**: Kotlin
--   **Architecture**: MVP (Model-View-Presenter)
--   **UI**: XML with Material 3 Design Components
--   **Data**: Android UsageStatsManager API
+| Layer / Concern | Component / Library |
+| :--- | :--- |
+| **Language & Concurrency** | Kotlin, Coroutines, StateFlow / SharedFlow |
+| **Dependency Injection** | **Dagger Hilt** (`@HiltAndroidApp`, `@HiltViewModel`, `@AndroidEntryPoint`) |
+| **Local Persistence** | **Room Database (v2)** with KSP & Gson JSON converters |
+| **Compiler Toolchain** | **KSP (Kotlin Symbol Processing)** for 2x faster build compilation |
+| **Background Processing** | Foreground Service (`FocusSessionService`), WorkManager (`MindfulnessWorker`) |
+| **System Integrations** | AppWidget Framework (`ZentraWidgetProvider`), Quick Settings Tile (`FocusTileService`) |
+| **UI Framework** | Android ViewBinding, Material 3 Design Components, Custom Canvas Views |
+
+---
 
 ## 📂 Project Structure
 
 ```text
 app/src/main/java/com/hsissa/zentra/
-├── core/        # Scoring logic and session management
-├── service/     # Usage statistics and system integration
-├── ui/          # View logic and Material 3 implementations
-└── util/        # Formatting and helper utilities
+├── core/            # Scoring logic (ScoreManager), AppLimitManager, SettingsManager
+├── data/
+│   ├── local/       # Room DB, DAOs, and Entities (UsageRecord, FocusStreakEntity, AppLimitEntity, FocusSessionEntity)
+│   └── repository/  # UsageRepository (Offline-first caching layer)
+├── di/              # Dagger Hilt Dependency Injection Modules (AppModule)
+├── service/         # FocusSessionService (Foreground), MindfulnessWorker, FocusTileService
+├── ui/              # Fragments, ViewModels, MindfulnessOverlayActivity, Custom Views (TrendChartView, CategoryPieChartView)
+├── util/            # Helper utilities, NotificationHelper, TimeFormatter
+└── widget/          # ZentraWidgetProvider (Android AppWidget)
 ```
 
-## 📥 Getting Started
+---
 
-1.  **Clone the repository**: `git clone https://github.com/hsissa/zentra.git`
-2.  **Open in Android Studio**: Sync Gradle and build the project.
-3.  **Deploy**: Run on an Android 8.0+ (API 26) device. (Current Version: 2.0)
-4.  **Permissions**: Grant **Usage Access** when prompted to enable data tracking.
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Android Studio**: Iguana (2023.2.1) or newer
+- **JDK**: Java 17
+- **Target SDK**: Android 14 (API 34)
+- **Minimum SDK**: Android 8.0 (API 26)
+
+### Build & Run
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/hsissa/zentra.git
+   cd zentra
+   ```
+
+2. **Build the Debug APK**:
+   ```bash
+   ./gradlew assembleDebug
+   ```
+
+3. **Deploy to Device / Emulator**:
+   - Deploy via Android Studio or `adb install app/build/outputs/apk/debug/app-debug.apk`.
+   - **Permissions**: Grant **Usage Access** permission when prompted on first launch to allow Zentra to analyze session events.
+
+---
 
 ## 🧪 Testing
 
-The core scoring logic and utility functions are backed by unit tests:
+The codebase includes unit test coverage for scoring logic and repository operations:
 
 ```bash
 ./gradlew test
 ```
+
+---
 
 ## 📜 License
 

@@ -21,11 +21,11 @@ class DashboardViewModel @Inject constructor(
     private val _todayUsage = MutableLiveData<TodayUsageResult?>(null)
     val todayUsage: LiveData<TodayUsageResult?> = _todayUsage
 
-    private val _weeklyTrend = MutableLiveData<List<DailyUsageSummary>>(emptyList())
-    val weeklyTrend: LiveData<List<DailyUsageSummary>> = _weeklyTrend
+    private val _weeklyTrend = MutableLiveData<List<DailyUsageSummary>?>(emptyList())
+    val weeklyTrend: LiveData<List<DailyUsageSummary>?> = _weeklyTrend
 
-    private val _isLoading = MutableLiveData(false)
-    val isLoading: LiveData<Boolean> = _isLoading
+    private val _isLoading = MutableLiveData<Boolean?>(false)
+    val isLoading: LiveData<Boolean?> = _isLoading
 
     fun loadData() {
         viewModelScope.launch {

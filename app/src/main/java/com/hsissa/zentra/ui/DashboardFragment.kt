@@ -68,7 +68,7 @@ class DashboardFragment : Fragment() {
 
     private fun observeViewModel() {
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            if (isLoading) showLoadingState() else hideState()
+            if (isLoading == true) showLoadingState() else hideState()
         }
 
         viewModel.todayUsage.observe(viewLifecycleOwner) { result ->
@@ -76,9 +76,9 @@ class DashboardFragment : Fragment() {
         }
 
         viewModel.weeklyTrend.observe(viewLifecycleOwner) { trend ->
-            if (trend.isNotEmpty()) {
-                val totalTime = trend.sumOf { it.totalScreenTimeMillis }
-                val totalWeighted = trend.sumOf { it.weightedScreenTimeMillis }
+            trend?.takeIf { it.isNotEmpty() }?.let { weeklyTrend ->
+                val totalTime = weeklyTrend.sumOf { it.totalScreenTimeMillis }
+                val totalWeighted = weeklyTrend.sumOf { it.weightedScreenTimeMillis }
 
                 val avgSummary = DailyUsageSummary(
                     totalScreenTimeMillis = totalTime,

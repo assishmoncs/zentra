@@ -9,7 +9,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Calendar
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class UsageRepository @Inject constructor(
     private val usageStatsDataSource: UsageStatsDataSource,
     private val usageLocalDataSource: UsageLocalDataSource

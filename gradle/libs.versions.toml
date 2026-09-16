@@ -11,6 +11,7 @@ hilt = "2.50"
 gson = "2.10.1"
 securityCrypto = "1.1.0-alpha06"
 junit = "4.13.2"
+coroutines = "1.7.3"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
@@ -31,3 +32,5 @@ hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hil
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "securityCrypto" }
 junit = { module = "junit:junit", version.ref = "junit" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }

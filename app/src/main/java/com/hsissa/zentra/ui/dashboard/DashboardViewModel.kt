@@ -18,10 +18,10 @@ class DashboardViewModel @Inject constructor(
     private val getWeeklyTrend: GetWeeklyTrendUseCase
 ) : ViewModel() {
 
-    private val _todayUsage = MutableLiveData<TodayUsageResult>()
-    val todayUsage: LiveData<TodayUsageResult> = _todayUsage
+    private val _todayUsage = MutableLiveData<TodayUsageResult?>(null)
+    val todayUsage: LiveData<TodayUsageResult?> = _todayUsage
 
-    private val _weeklyTrend = MutableLiveData<List<DailyUsageSummary>>()
+    private val _weeklyTrend = MutableLiveData<List<DailyUsageSummary>>(emptyList())
     val weeklyTrend: LiveData<List<DailyUsageSummary>> = _weeklyTrend
 
     private val _isLoading = MutableLiveData(false)

@@ -1,10 +1,12 @@
 # OS files
 .DS_Store
 Thumbs.db
+Desktop.ini
 
 # IDE
 .idea/
 *.iml
+.vscode/
 
 # Gradle and build outputs
 .gradle/
@@ -20,14 +22,21 @@ captures/
 .externalNativeBuild/
 .cxx/
 
-# Signing artifacts
-*.jks
-*.keystore
-
 # Generated app packages
 *.apk
 *.aab
+*.apks
+
+# Signing artifacts
+*.jks
+*.keystore
+*.p12
 
 # Logs and memory dumps
 *.log
 *.hprof
+
+# OS/editor temporary files
+*.swp
+*.swo
+*~

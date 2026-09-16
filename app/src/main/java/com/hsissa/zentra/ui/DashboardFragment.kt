@@ -13,8 +13,6 @@ import androidx.fragment.app.viewModels
 import com.hsissa.zentra.R
 import com.hsissa.zentra.core.ScoreManager
 import com.hsissa.zentra.core.SettingsManager
-import com.hsissa.zentra.data.local.AppDatabase
-import com.hsissa.zentra.data.repository.UsageRepository
 import com.hsissa.zentra.databinding.FragmentDashboardBinding
 import com.hsissa.zentra.service.DailyUsageSummary
 import com.hsissa.zentra.service.TodayUsageResult
@@ -74,14 +72,14 @@ class DashboardFragment : Fragment() {
         }
 
         viewModel.todayUsage.observe(viewLifecycleOwner) { result ->
-            handleTodayUsageResult(result)
+            result?.let(::handleTodayUsageResult)
         }
 
         viewModel.weeklyTrend.observe(viewLifecycleOwner) { trend ->
             if (trend.isNotEmpty()) {
                 val totalTime = trend.sumOf { it.totalScreenTimeMillis }
                 val totalWeighted = trend.sumOf { it.weightedScreenTimeMillis }
-                
+
                 val avgSummary = DailyUsageSummary(
                     totalScreenTimeMillis = totalTime,
                     weightedScreenTimeMillis = totalWeighted,
@@ -182,7 +180,7 @@ class DashboardFragment : Fragment() {
         val dailyGoal = settingsManager.getDailyGoal()
         val avgScore = ScoreManager.computeScore(weeklySummary.weightedScreenTimeMillis / 7)
         binding.tvWeeklyAvgScore.text = getString(R.string.weekly_avg_score, avgScore)
-        
+
         if (avgScore >= dailyGoal) {
             binding.tvWeeklyAvgScore.setTextColor(ContextCompat.getColor(requireContext(), R.color.score_high))
         } else {

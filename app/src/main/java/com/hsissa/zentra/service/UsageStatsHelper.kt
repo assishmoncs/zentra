@@ -82,10 +82,10 @@ object UsageStatsHelper {
             val packageManager = context.packageManager
             val launcherPackage = getLauncherPackageName(packageManager)
 
-            // Accuracy fix: queryUsageStats/queryAndAggregateUsageStats for today is often stale 
+            // Accuracy fix: queryUsageStats/queryAndAggregateUsageStats for today is often stale
             // or misattributed. queryEvents provides the most accurate real-time data for "today".
             val aggregatedStats = mutableMapOf<String, Long>()
-            
+
             if (daysCount == 1) {
                 // For today, rely on Events for real-time accuracy and local midnight alignment.
                 aggregatedStats.putAll(getUsageFromEvents(usageStatsManager, startTime, now))
@@ -100,12 +100,12 @@ object UsageStatsHelper {
                 .map { (packageName, totalTime) ->
                     val appName = resolveAppName(packageManager, packageName)
                     val isSystemOrLauncher = isSystemApp(packageManager, packageName) ||
-                                           packageName == launcherPackage || 
+                                           packageName == launcherPackage ||
                                            packageName == "com.android.systemui" ||
                                            packageName == "android" ||
                                            packageName.lowercase().contains("launcher") ||
                                            packageName == "com.google.android.googlequicksearchbox"
-                    
+
                     AppUsageInfo(
                         packageName = packageName,
                         appName = appName,
@@ -153,7 +153,7 @@ object UsageStatsHelper {
         val aggregatedStats = getUsageFromEvents(usageStatsManager, dayStart, dayEnd)
 
         val nonSystemUsage = aggregatedStats.filter { (pkg, time) ->
-            time > 0 && 
+            time > 0 &&
             pkg != context.packageName &&
             !isSystemApp(packageManager, pkg) &&
             pkg != launcherPackage &&
@@ -198,7 +198,7 @@ object UsageStatsHelper {
 
         val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         val results = mutableListOf<DailyUsageSummary>()
-        
+
         val calendar = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 0)
             set(Calendar.MINUTE, 0)
@@ -219,13 +219,13 @@ object UsageStatsHelper {
             val endCal = calendar.clone() as Calendar
             endCal.add(Calendar.DAY_OF_YEAR, 1)
             val dayEnd = if (i == 0) System.currentTimeMillis() else endCal.timeInMillis - 1
-            
+
             // Use the accurate event-based method for all days to avoid timezone/bucket issues
             val aggregatedStats = getUsageFromEvents(usageStatsManager, dayStart, dayEnd)
 
             val nonSystemUsage = aggregatedStats.filter { (pkg, time) ->
                 val isSys = isSystemCache.getOrPut(pkg) { isSystemApp(packageManager, pkg) }
-                time > 0 && 
+                time > 0 &&
                 pkg != context.packageName &&
                 !isSys &&
                 pkg != launcherPackage &&
@@ -274,7 +274,7 @@ object UsageStatsHelper {
     private fun getUsageFromEvents(usm: UsageStatsManager, startTime: Long, endTime: Long): Map<String, Long> {
         val stats = mutableMapOf<String, Long>()
         val event = UsageEvents.Event()
-        
+
         var currentApp: String? = null
         var lastTime = startTime
 
@@ -285,8 +285,8 @@ object UsageStatsHelper {
             when (event.eventType) {
                 UsageEvents.Event.ACTIVITY_RESUMED -> currentApp = event.packageName
                 UsageEvents.Event.ACTIVITY_PAUSED -> if (currentApp == event.packageName) currentApp = null
-                UsageEvents.Event.SCREEN_NON_INTERACTIVE,
-                26,
+                16, // SCREEN_NON_INTERACTIVE (API 28+)
+                26, // DEVICE_SHUTDOWN
                 27 -> currentApp = null
             }
         }
@@ -296,7 +296,7 @@ object UsageStatsHelper {
         while (events.hasNextEvent()) {
             events.getNextEvent(event)
             val now = event.timeStamp
-            
+
             // Abrupt shutdown recovery (DEVICE_STARTUP = 27)
             if (event.eventType == 27) {
                 currentApp = null
@@ -321,14 +321,14 @@ object UsageStatsHelper {
                         currentApp = null
                     }
                 }
-                UsageEvents.Event.SCREEN_NON_INTERACTIVE,
-                26 -> { // DEVICE_SHUTDOWN = 26
+                16, // SCREEN_NON_INTERACTIVE
+                26 -> { // DEVICE_SHUTDOWN
                     currentApp = null
                 }
             }
             lastTime = maxOf(lastTime, now)
         }
-        
+
         // 3. Final session until the end of the requested period
         if (currentApp != null) {
             val duration = endTime - lastTime
@@ -337,20 +337,20 @@ object UsageStatsHelper {
                 stats[app] = (stats[app] ?: 0L) + duration
             }
         }
-        
+
         return stats
     }
 
     private fun isSystemApp(pm: PackageManager, packageName: String): Boolean {
         return try {
             val hasLauncher = pm.getLaunchIntentForPackage(packageName) != null
-            
+
             // Filter out apps without launcher icons (background services/system components)
             if (!hasLauncher) return true
-            
+
             // Special cases for common UI components that have launcher intents but aren't "apps"
             if (packageName == "com.android.settings") return false // We want to track settings usage
-            
+
             false
         } catch (_: Exception) {
             true

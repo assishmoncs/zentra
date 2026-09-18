@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <style name="Zentra.Text" parent="" />
+
     <style name="Zentra.Text.Label">
         <item name="android:textSize">@dimen/text_caption</item>
         <item name="android:textColor">@color/text_tertiary</item>

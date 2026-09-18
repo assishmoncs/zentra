@@ -106,7 +106,8 @@
                 app:cardCornerRadius="@dimen/card_radius"
                 app:cardBackgroundColor="@color/bg_card"
                 app:cardElevation="0dp"
-                app:strokeWidth="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/divider"
                 android:layout_marginBottom="@dimen/space_2xl">
 
                 <LinearLayout
@@ -172,7 +173,8 @@
                 app:cardCornerRadius="@dimen/card_radius"
                 app:cardBackgroundColor="@color/bg_card"
                 app:cardElevation="0dp"
-                app:strokeWidth="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/divider"
                 android:layout_marginBottom="@dimen/space_2xl">
 
                 <LinearLayout
@@ -211,7 +213,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/focus_session_start"
                         android:textAllCaps="false"
-                        app:cornerRadius="@dimen/space_md" />
+                        app:cornerRadius="@dimen/button_radius" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -223,7 +225,8 @@
                 app:cardCornerRadius="@dimen/card_radius"
                 app:cardBackgroundColor="@color/bg_card"
                 app:cardElevation="0dp"
-                app:strokeWidth="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/divider"
                 android:layout_marginBottom="@dimen/space_2xl">
 
                 <LinearLayout
@@ -269,7 +272,8 @@
                 app:cardCornerRadius="@dimen/card_radius"
                 app:cardBackgroundColor="@color/bg_card"
                 app:cardElevation="0dp"
-                app:strokeWidth="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/divider"
                 android:layout_marginBottom="@dimen/space_2xl">
 
                 <LinearLayout

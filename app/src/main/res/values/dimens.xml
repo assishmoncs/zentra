@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Spacing -->
+    <dimen name="space_xs">4dp</dimen>
+    <dimen name="space_sm">8dp</dimen>
+    <dimen name="space_md">12dp</dimen>
+    <dimen name="space_lg">16dp</dimen>
+    <dimen name="space_xl">20dp</dimen>
+    <dimen name="space_2xl">24dp</dimen>
+    <dimen name="space_3xl">32dp</dimen>
+    <dimen name="space_4xl">40dp</dimen>
+    <dimen name="space_5xl">48dp</dimen>
+
+    <!-- Component dimensions -->
+    <dimen name="card_radius">24dp</dimen>
+    <dimen name="button_radius">16dp</dimen>
+    <dimen name="button_height">56dp</dimen>
+    <dimen name="min_touch_target">48dp</dimen>
+
+    <!-- Typography -->
+    <dimen name="text_caption">13sp</dimen>
+    <dimen name="text_body">15sp</dimen>
+    <dimen name="text_body_large">16sp</dimen>
+    <dimen name="text_title">18sp</dimen>
+    <dimen name="text_timer">48sp</dimen>
+    <dimen name="text_score">80sp</dimen>
+</resources>

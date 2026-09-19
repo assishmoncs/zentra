@@ -8,8 +8,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.hsissa.zentra.R
 import com.hsissa.zentra.core.ScoreManager
-import com.hsissa.zentra.data.local.AppDatabase
-import com.hsissa.zentra.data.repository.UsageRepository
 import com.hsissa.zentra.databinding.FragmentInsightsBinding
 import com.hsissa.zentra.service.TodayUsageResult
 import com.hsissa.zentra.ui.insights.InsightsViewModel
@@ -65,12 +63,22 @@ class InsightsFragment : Fragment() {
     }
 
     private fun observeViewModel() {
+        viewModel.isLoading.observe(viewLifecycleOwner) {
+            renderState()
+        }
+
+        viewModel.hasLoadError.observe(viewLifecycleOwner) {
+            renderState()
+        }
+
         viewModel.weeklyTrend.observe(viewLifecycleOwner) { weeklyTrend ->
             if (weeklyTrend.isNotEmpty()) {
                 binding.trendChartView.setData(weeklyTrend)
-                
+
                 val totalTime = weeklyTrend.sumOf { it.totalScreenTimeMillis }
-                val avgScore = ScoreManager.computeScore(weeklyTrend.sumOf { it.weightedScreenTimeMillis } / weeklyTrend.size)
+                val avgScore = ScoreManager.computeScore(
+                    weeklyTrend.sumOf { it.weightedScreenTimeMillis } / weeklyTrend.size
+                )
 
                 binding.tvWeeklyAvg.text = getString(R.string.weekly_avg_score, avgScore)
                 binding.tvWeeklyTotal.text = getString(
@@ -78,6 +86,7 @@ class InsightsFragment : Fragment() {
                     TimeFormatter.formatMillis(totalTime)
                 )
             }
+            renderState()
         }
 
         viewModel.todayUsage.observe(viewLifecycleOwner) { todayResult ->
@@ -88,9 +97,67 @@ class InsightsFragment : Fragment() {
                 is TodayUsageResult.Empty -> {
                     adapter.updateData(todayResult.summary.fullUsageList)
                 }
-                else -> { /* Handle error state if needed */ }
+                is TodayUsageResult.Error -> {
+                    adapter.updateData(emptyList())
+                }
+                null -> Unit
             }
+            renderState()
         }
+
+        binding.layoutState.btnRetry.setOnClickListener {
+            viewModel.loadInsights()
+        }
+    }
+
+    private fun renderState() {
+        if (viewModel.isLoading.value == true) {
+            showState(getString(R.string.insights_state_loading), loading = true)
+            return
+        }
+
+        if (viewModel.hasLoadError.value == true) {
+            showState(getString(R.string.insights_state_error), retry = true)
+            return
+        }
+
+        val weeklyTrend = viewModel.weeklyTrend.value.orEmpty()
+        val todayResult = viewModel.todayUsage.value
+        val hasTrendData = weeklyTrend.any {
+            it.totalScreenTimeMillis > 0L || it.weightedScreenTimeMillis > 0L
+        }
+
+        if (todayResult is TodayUsageResult.Error && !hasTrendData) {
+            showState(getString(R.string.insights_state_error), retry = true)
+            return
+        }
+
+        if (!hasTrendData && todayResult != null) {
+            showState(getString(R.string.insights_state_empty))
+            return
+        }
+
+        hideState()
+    }
+
+    private fun showState(message: String, loading: Boolean = false, retry: Boolean = false) {
+        binding.layoutState.root.visibility = View.VISIBLE
+        binding.layoutState.progressState.visibility = if (loading) View.VISIBLE else View.GONE
+        binding.layoutState.tvState.text = message
+        binding.layoutState.btnRetry.visibility = if (retry) View.VISIBLE else View.GONE
+
+        binding.cardTrend.visibility = View.GONE
+        binding.cardAnalytics.visibility = View.GONE
+        binding.tvDailyBreakdownLabel.visibility = View.GONE
+        binding.rvDailyBreakdown.visibility = View.GONE
+    }
+
+    private fun hideState() {
+        binding.layoutState.root.visibility = View.GONE
+        binding.cardTrend.visibility = View.VISIBLE
+        binding.cardAnalytics.visibility = View.VISIBLE
+        binding.tvDailyBreakdownLabel.visibility = View.VISIBLE
+        binding.rvDailyBreakdown.visibility = View.VISIBLE
     }
 
     override fun onDestroyView() {

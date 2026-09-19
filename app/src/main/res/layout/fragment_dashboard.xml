@@ -309,7 +309,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/weekly_avg_score"
+                                android:text="@string/dashboard_weekly_score_label"
                                 android:textSize="@dimen/text_caption"
                                 android:textColor="@color/text_tertiary" />
 
@@ -341,7 +341,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/weekly_total_time"
+                                android:text="@string/dashboard_weekly_time_label"
                                 android:textSize="@dimen/text_caption"
                                 android:textColor="@color/text_tertiary" />
 
@@ -458,50 +458,32 @@
             </com.google.android.material.card.MaterialCardView>
 
             <!-- State -->
-            <com.google.android.material.card.MaterialCardView
+            <TextView
+                android:id="@+id/tvState"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/space_lg"
-                app:cardBackgroundColor="@color/bg_surface"
-                app:cardCornerRadius="@dimen/button_radius"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/divider"
-                app:strokeWidth="1dp">
+                android:text=""
+                android:textSize="@dimen/text_caption"
+                android:textColor="@color/text_tertiary"
+                android:gravity="center"
+                android:visibility="gone" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="@dimen/space_xl">
-
-                    <TextView
-                        android:id="@+id/tvState"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text=""
-                        android:textSize="@dimen/text_caption"
-                        android:textColor="@color/text_tertiary"
-                        android:gravity="center"
-                        android:visibility="gone" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnRetry"
-                        android:layout_width="wrap_content"
-                        android:layout_height="@dimen/button_height"
-                        android:layout_marginTop="@dimen/space_md"
-                        android:text="@string/retry"
-                        android:textAllCaps="false"
-                        android:textSize="@dimen/text_body_large"
-                        app:cornerRadius="@dimen/button_radius"
-                        android:backgroundTint="@color/accent_soft"
-                        android:textColor="@color/accent"
-                        app:strokeColor="@color/accent"
-                        app:strokeWidth="1dp"
-                        android:visibility="gone" />
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRetry"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/button_height"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/space_md"
+                android:text="@string/retry"
+                android:textAllCaps="false"
+                android:textSize="@dimen/text_body_large"
+                app:cornerRadius="@dimen/button_radius"
+                android:backgroundTint="@color/accent_soft"
+                android:textColor="@color/accent"
+                app:strokeColor="@color/accent"
+                app:strokeWidth="1dp"
+                android:visibility="gone" />
 
         </LinearLayout>
     </FrameLayout>

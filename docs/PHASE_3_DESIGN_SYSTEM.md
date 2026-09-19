@@ -70,12 +70,25 @@ Create a consistent visual foundation for Zentra without migrating away from the
 - Added an explicit chart interaction hint.
 - Kept the custom chart and existing data flow unchanged.
 
-## Next Phase 3 work
+## Phase 3 closure
 
-1. Review remaining screens for hardcoded design values.
-2. Audit the widget and mindfulness overlay for accessibility consistency.
-3. Add release-quality regression coverage for critical core logic.
-4. Prepare Phase 3 closure criteria.
+All planned Phase 3 design-system work is complete.
+
+### Finalized
+
+- Dashboard hierarchy and state presentation.
+- Shared spacing, typography, card, button, and touch-target tokens.
+- Insights loading, empty, error, chart, and analytics presentation.
+- Settings grouping, control hierarchy, and state feedback.
+- Accessibility semantics for dynamic score, trend chart, Settings time controls, and category controls.
+- Widget styling and accessibility consistency.
+- Mindfulness overlay responsive layout, localized copy, semantic timer updates, and shared visual tokens.
+- JVM regression coverage for Dashboard and Insights ViewModels, plus existing core score/time formatter tests.
+- Source audit confirms the main application layouts no longer use inline hex colors.
+
+### Known follow-up outside Phase 3
+
+The home-screen widget currently displays a neutral Focus Score placeholder (`--`) rather than a live calculated score. Its click behavior remains intact. Live widget data synchronization belongs in a later feature/reliability phase.
 
 ## Validation
 
@@ -87,14 +100,19 @@ Run locally:
 ./gradlew assembleRelease
 ```
 
-Then manually verify:
+Manual smoke test:
 
-- Dashboard renders with usage permission granted.
-- Dashboard permission state still appears correctly.
-- Score, focus timer, weekly summary, and app list retain existing behavior.
-- Retry/error states remain usable.
-- Cards and buttons render consistently across the dashboard.
+- Dashboard with and without usage permission.
+- Dashboard loading/error/retry states.
+- Focus session start/stop.
+- Insights with populated and empty history.
+- Insights chart day selection.
+- Settings goal changes.
+- App categorization and search.
+- Quiet Hours toggle and time pickers.
+- Home-screen widget rendering and launch.
+- Mindfulness overlay timer and completion action.
 
 ## Exit criteria
 
-The design-system foundation is complete when the local validation passes and the dashboard shows no behavioral regression.
+Phase 3 is closed when the commands above pass locally and the listed smoke tests show no regression.

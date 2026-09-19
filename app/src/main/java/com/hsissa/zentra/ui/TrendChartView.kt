@@ -70,6 +70,8 @@ class TrendChartView @JvmOverloads constructor(
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (data.isEmpty()) return false
+
         if (event.action == MotionEvent.ACTION_DOWN || event.action == MotionEvent.ACTION_MOVE) {
             val widthPerBar = (width - (data.size - 1) * barSpacing) / data.size
             val x = event.x

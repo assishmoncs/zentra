@@ -80,9 +80,9 @@ class InsightsFragment : Fragment() {
                     weeklyTrend.sumOf { it.weightedScreenTimeMillis } / weeklyTrend.size
                 )
 
-                binding.tvWeeklyAvg.text = getString(R.string.weekly_avg_score, avgScore)
+                binding.tvWeeklyAvg.text = getString(R.string.insights_value_score, avgScore)
                 binding.tvWeeklyTotal.text = getString(
-                    R.string.weekly_total_time,
+                    R.string.insights_value_time,
                     TimeFormatter.formatMillis(totalTime)
                 )
             }

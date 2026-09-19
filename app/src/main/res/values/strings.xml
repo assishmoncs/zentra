@@ -74,4 +74,6 @@
     <string name="dashboard_goal_label">DAILY TARGET</string>
     <string name="dashboard_week_summary">7-DAY SUMMARY</string>
     <string name="dashboard_usage_summary">USAGE SUMMARY</string>
+    <string name="dashboard_weekly_score_label">AVERAGE FOCUS</string>
+    <string name="dashboard_weekly_time_label">TOTAL SCREEN TIME</string>
 </resources>

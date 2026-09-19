@@ -57,6 +57,8 @@
 
             <com.hsissa.zentra.ui.TrendChartView
                 android:id="@+id/trendChartView"
+                android:contentDescription="@string/insights_chart_content_description"
+                android:focusable="true"
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
                 android:layout_marginTop="@dimen/space_lg" />

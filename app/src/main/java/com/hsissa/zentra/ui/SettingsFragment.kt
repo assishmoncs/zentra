@@ -104,7 +104,7 @@ class SettingsFragment : Fragment() {
 
         MaterialAlertDialogBuilder(requireContext())
             .setView(dialogBinding.root)
-            .setPositiveButton(R.string.retry, null) // Reusing "Retry" as "Close" if needed or use android.R.string.ok
+            .setPositiveButton(R.string.close, null)
             .show()
     }
 

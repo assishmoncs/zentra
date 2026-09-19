@@ -42,12 +42,22 @@ Create a consistent visual foundation for Zentra without migrating away from the
 - Updated trend labels to use the actual weekday from each data point.
 - Aligned daily usage rows with the shared design tokens and card treatment.
 
+## Completed in this iteration
+
+- Redesigned Settings into clearly grouped Goals, App Categorization, and Downtime sections.
+- Standardized Settings cards, spacing, typography, outlines, and touch targets.
+- Added a descriptive Settings header to establish hierarchy.
+- Improved the Daily Focus Target presentation with a prominent current value.
+- Added explicit Quiet Hours enabled/disabled status text.
+- Corrected the app-search dialog action from the misleading “Retry” label to “Close”.
+- Aligned app-category rows with the shared design system.
+
 ## Next Phase 3 work
 
-1. Redesign Settings into grouped sections with clearer affordances.
-2. Audit accessibility, contrast, dynamic text sizing, and touch targets.
-3. Add focused UI/state tests where practical.
-4. Continue refining Insights visual hierarchy and chart readability.
+1. Audit accessibility, contrast, dynamic text sizing, and touch targets.
+2. Add focused UI/state tests where practical.
+3. Continue refining Insights visual hierarchy and chart readability.
+4. Review remaining screens for hardcoded design values.
 
 ## Validation
 

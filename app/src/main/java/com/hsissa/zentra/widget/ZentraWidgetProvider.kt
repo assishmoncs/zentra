@@ -35,6 +35,7 @@ class ZentraWidgetProvider : AppWidgetProvider() {
 
             val views = RemoteViews(context.packageName, R.layout.widget_zentra)
             views.setOnClickPendingIntent(R.id.widget_container, pendingIntent)
+            views.setTextViewText(R.id.tvWidgetScore, context.getString(R.string.widget_score_placeholder))
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }

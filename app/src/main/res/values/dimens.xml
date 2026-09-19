@@ -26,4 +26,9 @@
     <dimen name="text_display_large">40sp</dimen>
     <dimen name="text_timer">48sp</dimen>
     <dimen name="text_score">80sp</dimen>
+    <dimen name="icon_large">80dp</dimen>
+    <dimen name="widget_padding">16dp</dimen>
+    <dimen name="widget_title">16sp</dimen>
+    <dimen name="widget_score">22sp</dimen>
+
 </resources>

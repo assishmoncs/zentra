@@ -20,6 +20,9 @@
     <string name="usage_state_loading">Syncing usage data…</string>
     <string name="usage_state_unexpected_empty">Data is taking a moment to sync. Please try again.</string>
     <string name="usage_state_error">Unable to retrieve usage statistics. Please verify permissions.</string>
+    <string name="insights_state_loading">Loading your insights…</string>
+    <string name="insights_state_empty">Not enough usage history is available yet.</string>
+    <string name="insights_state_error">Insights could not be loaded. Please try again.</string>
 
     <string name="feedback_high">Excellent focus today. You’re in control.</string>
     <string name="feedback_mid">Moderate usage. Consider a short break.</string>

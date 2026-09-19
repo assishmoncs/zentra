@@ -44,6 +44,11 @@ class TrendChartView @JvmOverloads constructor(
     fun setData(newData: List<DailyUsageSummary>) {
         data = newData
         selectedIndex = -1
+        contentDescription = if (newData.isEmpty()) {
+            context.getString(R.string.insights_state_empty)
+        } else {
+            context.getString(R.string.insights_chart_content_description)
+        }
         invalidate()
     }
 

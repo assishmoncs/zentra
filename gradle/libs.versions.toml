@@ -12,6 +12,7 @@ gson = "2.10.1"
 securityCrypto = "1.1.0-alpha06"
 junit = "4.13.2"
 coroutines = "1.7.3"
+archCore = "2.2.0"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
@@ -34,3 +35,4 @@ androidx-security-crypto = { module = "androidx.security:security-crypto", versi
 junit = { module = "junit:junit", version.ref = "junit" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+androidx-arch-core-testing = { module = "androidx.arch.core:core-testing", version.ref = "archCore" }

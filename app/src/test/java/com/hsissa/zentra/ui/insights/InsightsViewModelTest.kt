@@ -5,6 +5,7 @@ import com.hsissa.zentra.domain.usecase.GetTodayUsageUseCase
 import com.hsissa.zentra.domain.usecase.GetWeeklyTrendUseCase
 import com.hsissa.zentra.service.DailyUsageSummary
 import com.hsissa.zentra.service.TodayUsageResult
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -12,6 +13,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import org.junit.Rule
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -21,6 +23,9 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class InsightsViewModelTest {
+
+    @get:Rule
+    val instantTaskExecutorRule = InstantTaskExecutorRule()
 
     private val testDispatcher = StandardTestDispatcher()
 

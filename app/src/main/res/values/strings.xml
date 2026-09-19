@@ -23,6 +23,18 @@
     <string name="insights_value_score">%1$d</string>
     <string name="insights_value_time">%1$s</string>
     <string name="insights_chart_hint">Tap a day to inspect its usage.</string>
+    <string name="mindfulness_title">Mindful Pause</string>
+    <string name="mindfulness_message">You\'ve reached your configured usage quota for %1$s. Take a moment to reflect before continuing.</string>
+    <string name="mindfulness_default_app">this app</string>
+    <string name="mindfulness_timer_initial">Pause for 5 seconds…</string>
+    <string name="mindfulness_breathe">Breathe in… (%1$d s)</string>
+    <string name="mindfulness_complete">Mindful Pause Complete</string>
+    <string name="mindfulness_continue">Continue to Home</string>
+    <string name="mindfulness_logo_description">Zentra</string>
+    <string name="widget_title">Zentra Focus</string>
+    <string name="widget_score_placeholder">Focus Score: --</string>
+    <string name="widget_open_description">Open Zentra</string>
+    <string name="widget_score_description">Current Focus Score</string>
 
     <string name="app_title">ZENTRA</string>
     <string name="app_subtitle">Mindful Digital Usage</string>

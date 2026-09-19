@@ -33,12 +33,21 @@ Create a consistent visual foundation for Zentra without migrating away from the
 - Preserved all existing Dashboard view IDs and interaction paths.
 - Preserved the existing loading, error, retry, and permission behavior.
 
+## Completed in this iteration
+
+- Added a reusable async state component for loading, empty, and retry states.
+- Standardized Insights loading, empty, and error handling.
+- Refactored Insights to use the Phase 2 use-case boundary instead of the concrete repository.
+- Added an empty-data guard to trend-chart touch handling.
+- Updated trend labels to use the actual weekday from each data point.
+- Aligned daily usage rows with the shared design tokens and card treatment.
+
 ## Next Phase 3 work
 
-1. Standardize loading, empty, permission, and error states across screens.
-2. Improve Insights visualizations and summary cards.
-3. Redesign Settings into grouped sections with clearer affordances.
-4. Audit accessibility, contrast, dynamic text sizing, and touch targets.
+1. Redesign Settings into grouped sections with clearer affordances.
+2. Audit accessibility, contrast, dynamic text sizing, and touch targets.
+3. Add focused UI/state tests where practical.
+4. Continue refining Insights visual hierarchy and chart readability.
 
 ## Validation
 

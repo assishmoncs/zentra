@@ -23,13 +23,22 @@ Create a consistent visual foundation for Zentra without migrating away from the
 - Primary content uses high-contrast text; supporting information uses reduced emphasis.
 - Touch targets remain large enough for reliable interaction.
 
+## Completed in this iteration
+
+- Redesigned the Dashboard information hierarchy around the Focus Score.
+- Reworked the permission state into a focused card-based entry point.
+- Reworked Focus Session into a compact action row.
+- Reworked weekly metrics into a two-column summary.
+- Reworked usage information into a clear secondary section.
+- Preserved all existing Dashboard view IDs and interaction paths.
+- Preserved the existing loading, error, retry, and permission behavior.
+
 ## Next Phase 3 work
 
-1. Redesign the Dashboard information hierarchy.
-2. Standardize loading, empty, permission, and error states.
-3. Improve Insights visualizations and summary cards.
-4. Redesign Settings into grouped sections with clearer affordances.
-5. Audit accessibility, contrast, dynamic text sizing, and touch targets.
+1. Standardize loading, empty, permission, and error states across screens.
+2. Improve Insights visualizations and summary cards.
+3. Redesign Settings into grouped sections with clearer affordances.
+4. Audit accessibility, contrast, dynamic text sizing, and touch targets.
 
 ## Validation
 

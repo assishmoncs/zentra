@@ -18,6 +18,11 @@
     <string name="settings_start_time_content_description">Choose quiet hours start time</string>
     <string name="settings_end_time_content_description">Choose quiet hours end time</string>
     <string name="insights_chart_content_description">Weekly screen time chart. Select a day to see its details.</string>
+    <string name="insights_average_label">AVERAGE FOCUS</string>
+    <string name="insights_total_label">TOTAL SCREEN TIME</string>
+    <string name="insights_value_score">%1$d</string>
+    <string name="insights_value_time">%1$s</string>
+    <string name="insights_chart_hint">Tap a day to inspect its usage.</string>
 
     <string name="app_title">ZENTRA</string>
     <string name="app_subtitle">Mindful Digital Usage</string>

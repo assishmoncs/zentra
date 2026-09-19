@@ -55,6 +55,14 @@
                 android:fontFamily="sans-serif-medium"
                 android:text="@string/weekly_usage_trend" />
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs"
+                android:text="@string/insights_chart_hint"
+                android:textColor="@color/text_tertiary"
+                android:textSize="@dimen/text_caption" />
+
             <com.hsissa.zentra.ui.TrendChartView
                 android:id="@+id/trendChartView"
                 android:contentDescription="@string/insights_chart_content_description"
@@ -114,24 +122,52 @@
                 android:layout_marginTop="@dimen/space_lg"
                 android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/tvWeeklyAvg"
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textColor="@color/text_primary"
-                    android:textSize="@dimen/text_body_large"
-                    android:fontFamily="sans-serif-medium" />
+                    android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/tvWeeklyTotal"
+                    <TextView
+                        style="@style/Zentra.Text.Label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/insights_average_label" />
+
+                    <TextView
+                        android:id="@+id/tvWeeklyAvg"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_xs"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_display"
+                        android:fontFamily="sans-serif-medium" />
+
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="@dimen/space_lg"
                     android:layout_weight="1"
-                    android:textColor="@color/text_primary"
-                    android:textSize="@dimen/text_body_large"
-                    android:fontFamily="sans-serif-medium" />
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/Zentra.Text.Label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/insights_total_label" />
+
+                    <TextView
+                        android:id="@+id/tvWeeklyTotal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_xs"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_title"
+                        android:fontFamily="sans-serif-medium" />
+
+                </LinearLayout>
 
             </LinearLayout>
         </LinearLayout>

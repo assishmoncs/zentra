@@ -152,6 +152,10 @@ class DashboardFragment : Fragment() {
         val feedbackResId = ScoreManager.getFeedbackResId(score)
 
         binding.tvScore.text = score.toString()
+        binding.tvScore.contentDescription = getString(
+            R.string.dashboard_score_content_description,
+            score
+        )
         binding.tvFeedback.setText(feedbackResId)
         binding.tvScore.setTextColor(scoreColor(score))
 

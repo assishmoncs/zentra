@@ -62,12 +62,20 @@ Create a consistent visual foundation for Zentra without migrating away from the
 - Added a dynamic accessibility description for the Focus Score value.
 - Preserved the existing visual hierarchy and interaction behavior.
 
+## Completed in this iteration
+
+- Added JVM state tests for Dashboard and Insights ViewModels.
+- Covered successful data publication, loading completion, Insights error handling, and empty-history behavior.
+- Refined Insights analytics into separate label/value metrics.
+- Added an explicit chart interaction hint.
+- Kept the custom chart and existing data flow unchanged.
+
 ## Next Phase 3 work
 
-1. Add focused UI/state tests where practical.
-2. Continue refining Insights visual hierarchy and chart readability.
-3. Review remaining screens for hardcoded design values.
-4. Audit the widget and mindfulness overlay for accessibility consistency.
+1. Review remaining screens for hardcoded design values.
+2. Audit the widget and mindfulness overlay for accessibility consistency.
+3. Add release-quality regression coverage for critical core logic.
+4. Prepare Phase 3 closure criteria.
 
 ## Validation
 

@@ -3,6 +3,7 @@ package com.hsissa.zentra.ui
 import android.os.Bundle
 import android.os.CountDownTimer
 import androidx.appcompat.app.AppCompatActivity
+import com.hsissa.zentra.R
 import com.hsissa.zentra.databinding.ActivityMindfulnessOverlayBinding
 
 class MindfulnessOverlayActivity : AppCompatActivity() {

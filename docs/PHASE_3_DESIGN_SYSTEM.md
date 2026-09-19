@@ -52,12 +52,22 @@ Create a consistent visual foundation for Zentra without migrating away from the
 - Corrected the app-search dialog action from the misleading “Retry” label to “Close”.
 - Aligned app-category rows with the shared design system.
 
+## Completed in this iteration
+
+- Centralized remaining large display text sizes into shared dimension tokens.
+- Added semantic descriptions for the Insights trend chart.
+- Made the custom trend chart keyboard/screen-reader discoverable.
+- Added accessible descriptions for Quiet Hours start/end controls.
+- Enforced minimum touch targets for Settings category controls.
+- Added a dynamic accessibility description for the Focus Score value.
+- Preserved the existing visual hierarchy and interaction behavior.
+
 ## Next Phase 3 work
 
-1. Audit accessibility, contrast, dynamic text sizing, and touch targets.
-2. Add focused UI/state tests where practical.
-3. Continue refining Insights visual hierarchy and chart readability.
-4. Review remaining screens for hardcoded design values.
+1. Add focused UI/state tests where practical.
+2. Continue refining Insights visual hierarchy and chart readability.
+3. Review remaining screens for hardcoded design values.
+4. Audit the widget and mindfulness overlay for accessibility consistency.
 
 ## Validation
 

@@ -72,12 +72,14 @@ class InsightsFragment : Fragment() {
         }
 
         viewModel.weeklyTrend.observe(viewLifecycleOwner) { weeklyTrend ->
-            if (weeklyTrend.isNotEmpty()) {
-                binding.trendChartView.setData(weeklyTrend)
+            val trend = weeklyTrend.orEmpty()
 
-                val totalTime = weeklyTrend.sumOf { it.totalScreenTimeMillis }
+            if (trend.isNotEmpty()) {
+                binding.trendChartView.setData(trend)
+
+                val totalTime = trend.sumOf { it.totalScreenTimeMillis }
                 val avgScore = ScoreManager.computeScore(
-                    weeklyTrend.sumOf { it.weightedScreenTimeMillis } / weeklyTrend.size
+                    trend.sumOf { it.weightedScreenTimeMillis } / trend.size
                 )
 
                 binding.tvWeeklyAvg.text = getString(R.string.insights_value_score, avgScore)

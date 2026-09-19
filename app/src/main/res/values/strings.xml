@@ -69,4 +69,9 @@
     <string name="title_dashboard">Dashboard</string>
     <string name="title_insights">Insights</string>
     <string name="title_settings">Settings</string>
+    <string name="dashboard_today_label">TODAY</string>
+    <string name="dashboard_score_hint">Your digital wellbeing snapshot</string>
+    <string name="dashboard_goal_label">DAILY TARGET</string>
+    <string name="dashboard_week_summary">7-DAY SUMMARY</string>
+    <string name="dashboard_usage_summary">USAGE SUMMARY</string>
 </resources>

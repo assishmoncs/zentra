@@ -2,6 +2,14 @@
 
 All notable changes to Zentra are documented here.
 
+## Phase 3 — UI/UX and Design System
+- Added shared spacing, typography, card, button, and touch-target tokens.
+- Redesigned Dashboard, Insights, and Settings hierarchy.
+- Standardized loading, empty, error, and retry presentation.
+- Added accessibility semantics and responsive layout safeguards.
+- Added Dashboard and Insights ViewModel regression tests.
+- Polished widget and mindfulness overlay presentation.
+
 ## [2.2.0] - 2026-08-12
 
 ### Baseline

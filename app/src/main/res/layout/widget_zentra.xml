@@ -3,34 +3,36 @@
     android:id="@+id/widget_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1E293B"
+    android:background="@color/widget_bg"
+    android:contentDescription="@string/widget_open_description"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="@dimen/widget_padding">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Zentra Focus"
-        android:textColor="#38BDF8"
-        android:textSize="16sp"
+        android:text="@string/widget_title"
+        android:textColor="@color/accent"
+        android:textSize="@dimen/widget_title"
         android:textStyle="bold" />
 
     <TextView
         android:id="@+id/tvWidgetScore"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Score: 85"
-        android:textColor="#FFFFFF"
-        android:textSize="22sp"
+        android:layout_marginTop="@dimen/space_sm"
+        android:contentDescription="@string/widget_score_description"
+        android:text="@string/widget_score_placeholder"
+        android:textColor="@color/text_primary"
+        android:textSize="@dimen/widget_score"
         android:textStyle="bold" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="Tap to open Zentra"
-        android:textColor="#94A3B8"
-        android:textSize="12sp" />
+        android:layout_marginTop="@dimen/space_xs"
+        android:text="@string/widget_open_description"
+        android:textColor="@color/text_tertiary"
+        android:textSize="@dimen/text_caption" />
 
 </LinearLayout>

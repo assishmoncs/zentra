@@ -6,6 +6,15 @@
     <string name="permission_instruction">Please enable “Usage access” for Zentra in the next screen.</string>
     <string name="grant_access">Continue to Settings</string>
     <string name="retry">Retry</string>
+    <string name="close">Close</string>
+    <string name="settings_header_subtitle">Shape Zentra around how you want to use your time.</string>
+    <string name="settings_goal_value_label">CURRENT TARGET</string>
+    <string name="settings_category_help_content">Choose how each app affects your Focus Score. Productive apps carry less weight, while distracting apps carry more.</string>
+    <string name="settings_quiet_enabled">Quiet hours are active</string>
+    <string name="settings_quiet_disabled">Quiet hours are off</string>
+    <string name="settings_start_time">START</string>
+    <string name="settings_end_time">END</string>
+    <string name="settings_help_content_description">Open Focus Score help</string>
 
     <string name="app_title">ZENTRA</string>
     <string name="app_subtitle">Mindful Digital Usage</string>

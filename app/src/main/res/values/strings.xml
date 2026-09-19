@@ -15,6 +15,9 @@
     <string name="settings_start_time">START</string>
     <string name="settings_end_time">END</string>
     <string name="settings_help_content_description">Open Focus Score help</string>
+    <string name="settings_start_time_content_description">Choose quiet hours start time</string>
+    <string name="settings_end_time_content_description">Choose quiet hours end time</string>
+    <string name="insights_chart_content_description">Weekly screen time chart. Select a day to see its details.</string>
 
     <string name="app_title">ZENTRA</string>
     <string name="app_subtitle">Mindful Digital Usage</string>

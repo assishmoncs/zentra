@@ -5,11 +5,14 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
-import android.view.View
 import android.view.MotionEvent
+import android.view.View
 import androidx.core.content.ContextCompat
 import com.hsissa.zentra.R
 import com.hsissa.zentra.service.DailyUsageSummary
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class TrendChartView @JvmOverloads constructor(
     context: Context,
@@ -21,12 +24,14 @@ class TrendChartView @JvmOverloads constructor(
     private val barPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val selectedBarPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textSize = 30f
         textAlign = Paint.Align.CENTER
+        color = ContextCompat.getColor(context, R.color.text_tertiary)
+        textSize = resources.getDimension(R.dimen.text_caption)
     }
     private val barRect = RectF()
-    private val cornerRadius = 12f
-    private val barSpacing = 24f
+    private val cornerRadius = resources.getDimension(R.dimen.space_sm)
+    private val barSpacing = resources.getDimension(R.dimen.space_lg)
+    private val dayFormatter = SimpleDateFormat("EEE", Locale.getDefault())
 
     private var selectedIndex = -1
     var onItemSelected: ((DailyUsageSummary?) -> Unit)? = null
@@ -34,12 +39,16 @@ class TrendChartView @JvmOverloads constructor(
     init {
         barPaint.color = ContextCompat.getColor(context, R.color.accent)
         selectedBarPaint.color = ContextCompat.getColor(context, R.color.text_primary)
-        textPaint.color = ContextCompat.getColor(context, R.color.text_tertiary)
     }
 
     fun setData(newData: List<DailyUsageSummary>) {
-        this.data = newData
+        data = newData
         selectedIndex = -1
+        contentDescription = if (newData.isEmpty()) {
+            context.getString(R.string.insights_state_empty)
+        } else {
+            context.getString(R.string.insights_chart_content_description)
+        }
         invalidate()
     }
 
@@ -49,7 +58,7 @@ class TrendChartView @JvmOverloads constructor(
 
         val maxUsage = data.maxOf { it.totalScreenTimeMillis }.coerceAtLeast(1L)
         val widthPerBar = (width - (data.size - 1) * barSpacing) / data.size
-        val chartHeight = height - 60f // Leave space for labels
+        val chartHeight = height - 60f
 
         data.forEachIndexed { index, summary ->
             val barHeight = (summary.totalScreenTimeMillis.toFloat() / maxUsage) * chartHeight
@@ -59,32 +68,35 @@ class TrendChartView @JvmOverloads constructor(
             val bottom = chartHeight
 
             barRect.set(left, top, right, bottom)
-            
+
             val paint = if (index == selectedIndex) selectedBarPaint else barPaint
             canvas.drawRoundRect(barRect, cornerRadius, cornerRadius, paint)
 
-            // Draw day label (simplified)
-            val dayLabel = "D${index + 1}"
-            canvas.drawText(dayLabel, left + widthPerBar / 2, height - 10f, textPaint)
+            val dayLabel = dayFormatter.format(Date(summary.dayTimestamp))
+            canvas.drawText(dayLabel, left + widthPerBar / 2f, height - 10f, textPaint)
         }
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (data.isEmpty()) return false
+
         if (event.action == MotionEvent.ACTION_DOWN || event.action == MotionEvent.ACTION_MOVE) {
             val widthPerBar = (width - (data.size - 1) * barSpacing) / data.size
-            val x = event.x
-            val index = (x / (widthPerBar + barSpacing)).toInt().coerceIn(0, data.size - 1)
-            
+            val index = (event.x / (widthPerBar + barSpacing)).toInt()
+                .coerceIn(0, data.size - 1)
+
             if (index != selectedIndex) {
                 selectedIndex = index
                 onItemSelected?.invoke(data[selectedIndex])
                 invalidate()
             }
+
             if (event.action == MotionEvent.ACTION_DOWN) {
                 performClick()
             }
             return true
         }
+
         return super.onTouchEvent(event)
     }
 

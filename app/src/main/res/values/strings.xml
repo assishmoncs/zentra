@@ -6,6 +6,35 @@
     <string name="permission_instruction">Please enable “Usage access” for Zentra in the next screen.</string>
     <string name="grant_access">Continue to Settings</string>
     <string name="retry">Retry</string>
+    <string name="close">Close</string>
+    <string name="settings_header_subtitle">Shape Zentra around how you want to use your time.</string>
+    <string name="settings_goal_value_label">CURRENT TARGET</string>
+    <string name="settings_category_help_content">Choose how each app affects your Focus Score. Productive apps carry less weight, while distracting apps carry more.</string>
+    <string name="settings_quiet_enabled">Quiet hours are active</string>
+    <string name="settings_quiet_disabled">Quiet hours are off</string>
+    <string name="settings_start_time">START</string>
+    <string name="settings_end_time">END</string>
+    <string name="settings_help_content_description">Open Focus Score help</string>
+    <string name="settings_start_time_content_description">Choose quiet hours start time</string>
+    <string name="settings_end_time_content_description">Choose quiet hours end time</string>
+    <string name="insights_chart_content_description">Weekly screen time chart. Select a day to see its details.</string>
+    <string name="insights_average_label">AVERAGE FOCUS</string>
+    <string name="insights_total_label">TOTAL SCREEN TIME</string>
+    <string name="insights_value_score">%1$d</string>
+    <string name="insights_value_time">%1$s</string>
+    <string name="insights_chart_hint">Tap a day to inspect its usage.</string>
+    <string name="mindfulness_title">Mindful Pause</string>
+    <string name="mindfulness_message">You\'ve reached your configured usage quota for %1$s. Take a moment to reflect before continuing.</string>
+    <string name="mindfulness_default_app">this app</string>
+    <string name="mindfulness_timer_initial">Pause for 5 seconds…</string>
+    <string name="mindfulness_breathe">Breathe in… (%1$d s)</string>
+    <string name="mindfulness_complete">Mindful Pause Complete</string>
+    <string name="mindfulness_continue">Continue to Home</string>
+    <string name="mindfulness_logo_description">Zentra</string>
+    <string name="widget_title">Zentra Focus</string>
+    <string name="widget_score_placeholder">Focus Score: --</string>
+    <string name="widget_open_description">Open Zentra</string>
+    <string name="widget_score_description">Current Focus Score</string>
 
     <string name="app_title">ZENTRA</string>
     <string name="app_subtitle">Mindful Digital Usage</string>
@@ -20,6 +49,9 @@
     <string name="usage_state_loading">Syncing usage data…</string>
     <string name="usage_state_unexpected_empty">Data is taking a moment to sync. Please try again.</string>
     <string name="usage_state_error">Unable to retrieve usage statistics. Please verify permissions.</string>
+    <string name="insights_state_loading">Loading your insights…</string>
+    <string name="insights_state_empty">Not enough usage history is available yet.</string>
+    <string name="insights_state_error">Insights could not be loaded. Please try again.</string>
 
     <string name="feedback_high">Excellent focus today. You’re in control.</string>
     <string name="feedback_mid">Moderate usage. Consider a short break.</string>
@@ -69,4 +101,12 @@
     <string name="title_dashboard">Dashboard</string>
     <string name="title_insights">Insights</string>
     <string name="title_settings">Settings</string>
+    <string name="dashboard_today_label">TODAY</string>
+    <string name="dashboard_score_hint">Your digital wellbeing snapshot</string>
+    <string name="dashboard_goal_label">DAILY TARGET</string>
+    <string name="dashboard_week_summary">7-DAY SUMMARY</string>
+    <string name="dashboard_usage_summary">USAGE SUMMARY</string>
+    <string name="dashboard_weekly_score_label">AVERAGE FOCUS</string>
+    <string name="dashboard_weekly_time_label">TOTAL SCREEN TIME</string>
+    <string name="dashboard_score_content_description">Focus score %1$d out of 100</string>
 </resources>

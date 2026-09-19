@@ -13,8 +13,6 @@ import androidx.fragment.app.viewModels
 import com.hsissa.zentra.R
 import com.hsissa.zentra.core.ScoreManager
 import com.hsissa.zentra.core.SettingsManager
-import com.hsissa.zentra.data.local.AppDatabase
-import com.hsissa.zentra.data.repository.UsageRepository
 import com.hsissa.zentra.databinding.FragmentDashboardBinding
 import com.hsissa.zentra.service.DailyUsageSummary
 import com.hsissa.zentra.service.TodayUsageResult
@@ -70,18 +68,18 @@ class DashboardFragment : Fragment() {
 
     private fun observeViewModel() {
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            if (isLoading) showLoadingState() else hideState()
+            if (isLoading == true) showLoadingState() else hideState()
         }
 
         viewModel.todayUsage.observe(viewLifecycleOwner) { result ->
-            handleTodayUsageResult(result)
+            result?.let(::handleTodayUsageResult)
         }
 
         viewModel.weeklyTrend.observe(viewLifecycleOwner) { trend ->
-            if (trend.isNotEmpty()) {
-                val totalTime = trend.sumOf { it.totalScreenTimeMillis }
-                val totalWeighted = trend.sumOf { it.weightedScreenTimeMillis }
-                
+            trend?.takeIf { it.isNotEmpty() }?.let { weeklyTrend ->
+                val totalTime = weeklyTrend.sumOf { it.totalScreenTimeMillis }
+                val totalWeighted = weeklyTrend.sumOf { it.weightedScreenTimeMillis }
+
                 val avgSummary = DailyUsageSummary(
                     totalScreenTimeMillis = totalTime,
                     weightedScreenTimeMillis = totalWeighted,
@@ -154,6 +152,10 @@ class DashboardFragment : Fragment() {
         val feedbackResId = ScoreManager.getFeedbackResId(score)
 
         binding.tvScore.text = score.toString()
+        binding.tvScore.contentDescription = getString(
+            R.string.dashboard_score_content_description,
+            score
+        )
         binding.tvFeedback.setText(feedbackResId)
         binding.tvScore.setTextColor(scoreColor(score))
 
@@ -182,7 +184,7 @@ class DashboardFragment : Fragment() {
         val dailyGoal = settingsManager.getDailyGoal()
         val avgScore = ScoreManager.computeScore(weeklySummary.weightedScreenTimeMillis / 7)
         binding.tvWeeklyAvgScore.text = getString(R.string.weekly_avg_score, avgScore)
-        
+
         if (avgScore >= dailyGoal) {
             binding.tvWeeklyAvgScore.setTextColor(ContextCompat.getColor(requireContext(), R.color.score_high))
         } else {

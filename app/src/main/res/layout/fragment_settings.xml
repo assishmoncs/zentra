@@ -5,107 +5,133 @@
     android:layout_height="match_parent"
     android:background="@color/bg_dark"
     android:orientation="vertical"
-    android:padding="24dp">
+    android:paddingStart="@dimen/space_2xl"
+    android:paddingEnd="@dimen/space_2xl"
+    android:paddingTop="@dimen/space_3xl">
 
     <TextView
+        style="@style/Zentra.Text.Label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:layout_marginBottom="4dp"
-        android:fontFamily="sans-serif-black"
-        android:letterSpacing="0.4"
-        android:text="@string/title_settings"
-        android:textAllCaps="true"
-        android:textColor="@color/text_tertiary"
-        android:textSize="12sp" />
+        android:text="@string/title_settings" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_xs"
+        android:text="@string/settings_header_subtitle"
+        android:textColor="@color/text_secondary"
+        android:textSize="@dimen/text_body"
+        android:layout_marginBottom="@dimen/space_lg" />
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="16dp">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingBottom="@dimen/space_4xl">
 
-            <!-- Daily Goal Section -->
+            <!-- Goals -->
             <TextView
+                style="@style/Zentra.Text.Label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:fontFamily="sans-serif-black"
-                android:letterSpacing="0.2"
-                android:text="@string/settings_goals_title"
-                android:textAllCaps="true"
-                android:textColor="@color/text_tertiary"
-                android:textSize="11sp" />
+                android:text="@string/settings_goals_title" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="24dp"
+                android:layout_marginTop="@dimen/space_md"
+                android:layout_marginBottom="@dimen/space_2xl"
                 app:cardBackgroundColor="@color/bg_card"
-                app:cardCornerRadius="24dp"
+                app:cardCornerRadius="@dimen/card_radius"
                 app:cardElevation="0dp"
-                app:strokeWidth="0dp">
+                app:strokeColor="@color/divider"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif-medium"
-                        android:text="@string/settings_daily_goal_label"
-                        android:textColor="@color/text_primary"
-                        android:textSize="16sp" />
-
-                    <TextView
-                        android:id="@+id/tvGoalDescription"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="@string/settings_daily_goal_desc"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="13sp" />
+                    android:padding="@dimen/space_xl">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="24dp"
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
-                        <com.google.android.material.slider.Slider
-                            android:id="@+id/sliderGoal"
+                        <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:stepSize="5.0"
-                            android:valueFrom="0.0"
-                            android:valueTo="100.0"
-                            app:thumbColor="@color/accent"
-                            app:trackColorActive="@color/accent" />
+                            android:orientation="vertical">
 
-                        <TextView
-                            android:id="@+id/tvGoalValue"
-                            android:layout_width="48dp"
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/settings_daily_goal_label"
+                                android:textColor="@color/text_primary"
+                                android:textSize="@dimen/text_title"
+                                android:fontFamily="sans-serif-medium" />
+
+                            <TextView
+                                android:id="@+id/tvGoalDescription"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/space_xs"
+                                android:text="@string/settings_daily_goal_desc"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="@dimen/text_caption" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:fontFamily="sans-serif-bold"
                             android:gravity="end"
-                            android:text="80"
-                            android:textColor="@color/accent"
-                            android:textSize="18sp" />
+                            android:orientation="vertical">
+
+                            <TextView
+                                style="@style/Zentra.Text.Label"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/settings_goal_value_label" />
+
+                            <TextView
+                                android:id="@+id/tvGoalValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/space_xs"
+                                android:text="80"
+                                android:textColor="@color/accent"
+                                android:textSize="@dimen/text_display"
+                                android:fontFamily="sans-serif-medium" />
+
+                        </LinearLayout>
                     </LinearLayout>
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/sliderGoal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_lg"
+                        android:stepSize="5.0"
+                        android:valueFrom="0.0"
+                        android:valueTo="100.0"
+                        app:thumbColor="@color/accent"
+                        app:trackColorActive="@color/accent" />
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- App Categorization Section -->
+            <!-- App categorization -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -113,23 +139,18 @@
                 android:orientation="horizontal">
 
                 <TextView
+                    style="@style/Zentra.Text.Label"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
                     android:layout_weight="1"
-                    android:fontFamily="sans-serif-black"
-                    android:letterSpacing="0.2"
-                    android:text="@string/settings_app_cat_title"
-                    android:textAllCaps="true"
-                    android:textColor="@color/text_tertiary"
-                    android:textSize="11sp" />
+                    android:text="@string/settings_app_cat_title" />
 
                 <ImageButton
                     android:id="@+id/btnHelp"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
+                    android:layout_width="@dimen/min_touch_target"
+                    android:layout_height="@dimen/min_touch_target"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="Help"
+                    android:contentDescription="@string/settings_help_content_description"
                     android:src="@drawable/ic_help"
                     app:tint="@color/text_tertiary" />
             </LinearLayout>
@@ -137,21 +158,21 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="@dimen/space_xs"
+                android:layout_marginBottom="@dimen/space_md"
                 android:text="@string/settings_app_cat_desc"
                 android:textColor="@color/text_tertiary"
-                android:textSize="12sp" />
+                android:textSize="@dimen/text_caption" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="24dp"
+                android:layout_marginBottom="@dimen/space_2xl"
                 app:cardBackgroundColor="@color/bg_card"
-                app:cardCornerRadius="24dp"
+                app:cardCornerRadius="@dimen/card_radius"
                 app:cardElevation="0dp"
-                app:strokeWidth="0dp">
+                app:strokeColor="@color/divider"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -170,38 +191,36 @@
                         style="@style/Widget.Material3.Button.TextButton"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:minHeight="@dimen/min_touch_target"
                         android:text="@string/settings_show_more"
                         android:textColor="@color/accent" />
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Quiet Hours Section -->
+            <!-- Downtime -->
             <TextView
+                style="@style/Zentra.Text.Label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:fontFamily="sans-serif-black"
-                android:letterSpacing="0.2"
-                android:text="@string/settings_downtime_title"
-                android:textAllCaps="true"
-                android:textColor="@color/text_tertiary"
-                android:textSize="11sp" />
+                android:text="@string/settings_downtime_title" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="32dp"
+                android:layout_marginTop="@dimen/space_md"
+                android:layout_marginBottom="@dimen/space_lg"
                 app:cardBackgroundColor="@color/bg_card"
-                app:cardCornerRadius="24dp"
+                app:cardCornerRadius="@dimen/card_radius"
                 app:cardElevation="0dp"
-                app:strokeWidth="0dp">
+                app:strokeColor="@color/divider"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:padding="@dimen/space_xl">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -218,92 +237,104 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:fontFamily="sans-serif-medium"
                                 android:text="@string/settings_quiet_hours_label"
                                 android:textColor="@color/text_primary"
-                                android:textSize="16sp" />
+                                android:textSize="@dimen/text_title"
+                                android:fontFamily="sans-serif-medium" />
 
                             <TextView
+                                android:id="@+id/tvQuietHoursDescription"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="@string/settings_quiet_hours_desc"
+                                android:layout_marginTop="@dimen/space_xs"
+                                android:text="@string/settings_quiet_disabled"
                                 android:textColor="@color/text_secondary"
-                                android:textSize="13sp" />
+                                android:textSize="@dimen/text_caption" />
+
                         </LinearLayout>
 
                         <com.google.android.material.materialswitch.MaterialSwitch
                             android:id="@+id/switchQuietHours"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content" />
+
                     </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="@dimen/space_xl"
+                        android:background="@color/divider" />
 
                     <LinearLayout
                         android:id="@+id/layoutTimePickers"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="20dp"
+                        android:layout_marginTop="@dimen/space_lg"
                         android:orientation="horizontal">
 
                         <LinearLayout
                             android:id="@+id/btnStartTime"
+                            android:contentDescription="@string/settings_start_time_content_description"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
+                            android:layout_height="@dimen/min_touch_target"
                             android:layout_weight="1"
                             android:background="?attr/selectableItemBackground"
                             android:clickable="true"
                             android:focusable="true"
-                            android:orientation="vertical">
+                            android:gravity="center_vertical"
+                            android:orientation="vertical"
+                            android:paddingStart="@dimen/space_sm">
 
                             <TextView
+                                style="@style/Zentra.Text.Label"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/settings_start_label"
-                                android:textColor="@color/text_tertiary"
-                                android:textSize="11sp"
-                                android:textAllCaps="true"
-                                android:fontFamily="sans-serif-black"/>
+                                android:text="@string/settings_start_time" />
 
                             <TextView
                                 android:id="@+id/tvStartTime"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
+                                android:layout_marginTop="@dimen/space_xs"
                                 android:text="22:00"
                                 android:textColor="@color/text_primary"
-                                android:textSize="18sp"
+                                android:textSize="@dimen/text_title"
                                 android:fontFamily="sans-serif-medium" />
+
                         </LinearLayout>
 
                         <LinearLayout
                             android:id="@+id/btnEndTime"
+                            android:contentDescription="@string/settings_end_time_content_description"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
+                            android:layout_height="@dimen/min_touch_target"
                             android:layout_weight="1"
                             android:background="?attr/selectableItemBackground"
                             android:clickable="true"
                             android:focusable="true"
-                            android:orientation="vertical">
+                            android:gravity="center_vertical"
+                            android:orientation="vertical"
+                            android:paddingStart="@dimen/space_sm">
 
                             <TextView
+                                style="@style/Zentra.Text.Label"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/settings_end_label"
-                                android:textColor="@color/text_tertiary"
-                                android:textSize="11sp"
-                                android:textAllCaps="true"
-                                android:fontFamily="sans-serif-black"/>
+                                android:text="@string/settings_end_time" />
 
                             <TextView
                                 android:id="@+id/tvEndTime"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
+                                android:layout_marginTop="@dimen/space_xs"
                                 android:text="07:00"
                                 android:textColor="@color/text_primary"
-                                android:textSize="18sp"
+                                android:textSize="@dimen/text_title"
                                 android:fontFamily="sans-serif-medium" />
+
                         </LinearLayout>
+
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

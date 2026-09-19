@@ -22,4 +22,10 @@
 
     <!-- Divider -->
     <color name="divider">#2C2C2E</color>
+
+    <!-- Secondary surfaces -->
+    <color name="overlay_bg">#121824</color>
+    <color name="overlay_accent">#64FFDA</color>
+    <color name="overlay_text_secondary">#B0BEC5</color>
+    <color name="widget_bg">#1C1C1E</color>
 </resources>

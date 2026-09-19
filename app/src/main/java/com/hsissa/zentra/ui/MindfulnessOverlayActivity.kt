@@ -3,6 +3,7 @@ package com.hsissa.zentra.ui
 import android.os.Bundle
 import android.os.CountDownTimer
 import androidx.appcompat.app.AppCompatActivity
+import com.hsissa.zentra.R
 import com.hsissa.zentra.databinding.ActivityMindfulnessOverlayBinding
 
 class MindfulnessOverlayActivity : AppCompatActivity() {
@@ -15,8 +16,9 @@ class MindfulnessOverlayActivity : AppCompatActivity() {
         binding = ActivityMindfulnessOverlayBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val appName = intent.getStringExtra(EXTRA_APP_NAME) ?: "this app"
-        binding.tvMessage.text = "You've reached your configured usage quota for $appName. Take a moment to reflect before continuing."
+        val appName = intent.getStringExtra(EXTRA_APP_NAME)
+            ?: getString(R.string.mindfulness_default_app)
+        binding.tvMessage.text = getString(R.string.mindfulness_message, appName)
 
         startMindfulTimer()
 
@@ -29,11 +31,13 @@ class MindfulnessOverlayActivity : AppCompatActivity() {
         countDownTimer = object : CountDownTimer(5000, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 val sec = (millisUntilFinished / 1000) + 1
-                binding.tvBreathTimer.text = "Breathe in... ($sec s)"
+                binding.tvBreathTimer.text = getString(R.string.mindfulness_breathe, sec)
+                binding.tvBreathTimer.contentDescription = binding.tvBreathTimer.text
             }
 
             override fun onFinish() {
-                binding.tvBreathTimer.text = "Mindful Pause Complete"
+                binding.tvBreathTimer.text = getString(R.string.mindfulness_complete)
+                binding.tvBreathTimer.contentDescription = binding.tvBreathTimer.text
                 binding.btnClose.isEnabled = true
             }
         }.start()

@@ -137,6 +137,9 @@ class SettingsFragment : Fragment() {
     }
 
     private fun updateQuietHoursUi(enabled: Boolean) {
+        binding.tvQuietHoursDescription.setText(
+            if (enabled) R.string.settings_quiet_enabled else R.string.settings_quiet_disabled
+        )
         binding.layoutTimePickers.alpha = if (enabled) 1.0f else 0.5f
         binding.btnStartTime.isEnabled = enabled
         binding.btnEndTime.isEnabled = enabled

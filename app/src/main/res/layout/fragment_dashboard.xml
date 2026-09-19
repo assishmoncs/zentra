@@ -50,7 +50,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/space_2xl"
                         android:text="@string/permission_title"
-                        android:textSize="28sp"
+                        android:textSize="@dimen/text_display"
                         android:fontFamily="sans-serif-medium"
                         android:textColor="@color/text_primary" />
 
@@ -117,7 +117,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/space_xs"
                 android:text="@string/app_title"
-                android:textSize="30sp"
+                android:textSize="@dimen/text_display"
                 android:textColor="@color/text_primary"
                 android:fontFamily="sans-serif-medium" />
 
@@ -391,7 +391,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/space_lg"
                         android:text="@string/screen_time_today"
-                        android:textSize="20sp"
+                        android:textSize="@dimen/text_title"
                         android:textColor="@color/text_primary"
                         android:fontFamily="sans-serif-medium" />
 

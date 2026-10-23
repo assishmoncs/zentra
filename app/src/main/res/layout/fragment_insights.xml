@@ -187,6 +187,7 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:clipToPadding="false"
-        android:paddingBottom="@dimen/space_2xl" />
+        android:paddingBottom="@dimen/space_2xl"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
 </LinearLayout>

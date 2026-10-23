@@ -10,8 +10,9 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import com.hsissa.zentra.R
 import com.hsissa.zentra.service.DailyUsageSummary
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 class TrendChartView @JvmOverloads constructor(
@@ -31,7 +32,7 @@ class TrendChartView @JvmOverloads constructor(
     private val barRect = RectF()
     private val cornerRadius = resources.getDimension(R.dimen.space_sm)
     private val barSpacing = resources.getDimension(R.dimen.space_lg)
-    private val dayFormatter = SimpleDateFormat("EEE", Locale.getDefault())
+    private val dayFormatter = DateTimeFormatter.ofPattern("EEE", Locale.getDefault())
 
     private var selectedIndex = -1
     var onItemSelected: ((DailyUsageSummary?) -> Unit)? = null
@@ -59,6 +60,7 @@ class TrendChartView @JvmOverloads constructor(
         val maxUsage = data.maxOf { it.totalScreenTimeMillis }.coerceAtLeast(1L)
         val widthPerBar = (width - (data.size - 1) * barSpacing) / data.size
         val chartHeight = height - 60f
+        val zoneId = ZoneId.systemDefault()
 
         data.forEachIndexed { index, summary ->
             val barHeight = (summary.totalScreenTimeMillis.toFloat() / maxUsage) * chartHeight
@@ -72,7 +74,9 @@ class TrendChartView @JvmOverloads constructor(
             val paint = if (index == selectedIndex) selectedBarPaint else barPaint
             canvas.drawRoundRect(barRect, cornerRadius, cornerRadius, paint)
 
-            val dayLabel = dayFormatter.format(Date(summary.dayTimestamp))
+            val dayLabel = Instant.ofEpochMilli(summary.dayTimestamp)
+                .atZone(zoneId)
+                .format(dayFormatter)
             canvas.drawText(dayLabel, left + widthPerBar / 2f, height - 10f, textPaint)
         }
     }

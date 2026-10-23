@@ -10,6 +10,7 @@ import com.hsissa.zentra.service.DailyUsageSummary
 import com.hsissa.zentra.service.TodayUsageResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -27,12 +28,21 @@ class DashboardViewModel @Inject constructor(
     private val _isLoading = MutableLiveData<Boolean?>(false)
     val isLoading: LiveData<Boolean?> = _isLoading
 
+    private val _hasLoadError = MutableLiveData<Boolean?>(false)
+    val hasLoadError: LiveData<Boolean?> = _hasLoadError
+
     fun loadData() {
         viewModelScope.launch {
             _isLoading.value = true
+            _hasLoadError.value = false
             try {
                 _todayUsage.value = getTodayUsage()
                 _weeklyTrend.value = getWeeklyTrend()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                _hasLoadError.value = true
+                _todayUsage.value = TodayUsageResult.Error
             } finally {
                 _isLoading.value = false
             }

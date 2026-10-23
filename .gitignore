@@ -15,6 +15,7 @@ build/
 
 # Android local/config artifacts
 local.properties
+keystore.properties
 captures/
 .navigation/
 

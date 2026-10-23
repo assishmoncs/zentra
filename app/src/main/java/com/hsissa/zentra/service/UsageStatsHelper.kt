@@ -6,8 +6,14 @@ import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Process
+import android.util.Log
+import androidx.annotation.Keep
+import com.google.gson.annotations.SerializedName
+import com.hsissa.zentra.core.SettingsManager
 import com.hsissa.zentra.util.TimeFormatter
-import java.util.Calendar
+import java.time.LocalDate
+import java.time.ZoneId
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Handles all UsageStatsManager interactions.
@@ -15,8 +21,13 @@ import java.util.Calendar
  */
 object UsageStatsHelper {
 
+    private const val TAG = "UsageStatsHelper"
+    private val appNameCache = ConcurrentHashMap<String, String>()
+    private val systemAppCache = ConcurrentHashMap<String, Boolean>()
+
     /**
      * Returns true if the PACKAGE_USAGE_STATS permission has been granted.
+     * Avoids synchronous UsageStatsManager IPC queries when called on the UI thread.
      */
     fun hasUsagePermission(context: Context): Boolean {
         val appOps = (context.getSystemService(Context.APP_OPS_SERVICE) as? AppOpsManager) ?: return false
@@ -35,19 +46,7 @@ object UsageStatsHelper {
             )
         }
 
-        if (mode != AppOpsManager.MODE_ALLOWED) return false
-
-        return try {
-            val usageStatsManager =
-                context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager ?: return false
-            val now = System.currentTimeMillis()
-            usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, now - PROBE_WINDOW_MILLIS, now)
-            true
-        } catch (_: SecurityException) {
-            false
-        } catch (_: RuntimeException) {
-            false
-        }
+        return mode == AppOpsManager.MODE_ALLOWED
     }
 
     /**
@@ -65,25 +64,17 @@ object UsageStatsHelper {
 
         return try {
             val usageStatsManager =
-                context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+                context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
+                    ?: return TodayUsageResult.Error
 
-            val calendar = Calendar.getInstance().apply {
-                set(Calendar.HOUR_OF_DAY, 0)
-                set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-                if (daysCount > 1) {
-                    add(Calendar.DAY_OF_YEAR, -(daysCount - 1))
-                }
-            }
-            val startTime = calendar.timeInMillis
+            val zoneId = ZoneId.systemDefault()
+            val startLocalDate = LocalDate.now(zoneId).minusDays((daysCount - 1).coerceAtLeast(0).toLong())
+            val startTime = startLocalDate.atStartOfDay(zoneId).toInstant().toEpochMilli()
             val now = System.currentTimeMillis()
 
             val packageManager = context.packageManager
             val launcherPackage = getLauncherPackageName(packageManager)
 
-            // Accuracy fix: queryUsageStats/queryAndAggregateUsageStats for today is often stale
-            // or misattributed. queryEvents provides the most accurate real-time data for "today".
             val aggregatedStats = mutableMapOf<String, Long>()
 
             if (daysCount == 1) {
@@ -99,12 +90,11 @@ object UsageStatsHelper {
             val usageList = aggregatedStats.asSequence()
                 .map { (packageName, totalTime) ->
                     val appName = resolveAppName(packageManager, packageName)
-                    val isSystemOrLauncher = isSystemApp(packageManager, packageName) ||
-                                           packageName == launcherPackage ||
-                                           packageName == "com.android.systemui" ||
-                                           packageName == "android" ||
-                                           packageName.lowercase().contains("launcher") ||
-                                           packageName == "com.google.android.googlequicksearchbox"
+                    val isSystemOrLauncher = isSystemOrLauncherPackage(
+                        packageManager,
+                        packageName,
+                        launcherPackage
+                    )
 
                     AppUsageInfo(
                         packageName = packageName,
@@ -124,7 +114,8 @@ object UsageStatsHelper {
                 totalScreenTimeMillis = usageList.sumOf { it.totalTimeMillis },
                 weightedScreenTimeMillis = nonSystemUsage.sumOf { (it.totalTimeMillis * it.category.scoreWeight).toLong() },
                 topApps = nonSystemUsage.take(MAX_TOP_APPS),
-                fullUsageList = nonSystemUsage
+                fullUsageList = nonSystemUsage,
+                dayTimestamp = startTime
             )
 
             if (summary.totalScreenTimeMillis > 0L || summary.topApps.isNotEmpty()) {
@@ -133,9 +124,11 @@ object UsageStatsHelper {
                 val isUnexpected = (now - startTime) > UNEXPECTED_EMPTY_THRESHOLD_MILLIS
                 TodayUsageResult.Empty(summary, isUnexpected)
             }
-        } catch (_: SecurityException) {
+        } catch (e: SecurityException) {
+            Log.e(TAG, "SecurityException querying usage stats", e)
             TodayUsageResult.Error
-        } catch (_: RuntimeException) {
+        } catch (e: RuntimeException) {
+            Log.e(TAG, "RuntimeException querying usage stats", e)
             TodayUsageResult.Error
         }
     }
@@ -146,129 +139,63 @@ object UsageStatsHelper {
     fun getSummaryForDay(context: Context, dayStart: Long, dayEnd: Long): DailyUsageSummary {
         if (!hasUsagePermission(context)) return DailyUsageSummary.EMPTY
 
-        val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-        val packageManager = context.packageManager
-        val launcherPackage = getLauncherPackageName(packageManager)
+        return try {
+            val usageStatsManager =
+                context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
+                    ?: return DailyUsageSummary.EMPTY
+            val packageManager = context.packageManager
+            val launcherPackage = getLauncherPackageName(packageManager)
 
-        val aggregatedStats = getUsageFromEvents(usageStatsManager, dayStart, dayEnd)
-
-        val nonSystemUsage = aggregatedStats.filter { (pkg, time) ->
-            time > 0 &&
-            pkg != context.packageName &&
-            !isSystemApp(packageManager, pkg) &&
-            pkg != launcherPackage &&
-            pkg != "com.android.systemui" &&
-            pkg != "android" &&
-            !pkg.lowercase().contains("launcher") &&
-            pkg != "com.google.android.googlequicksearchbox"
-        }
-
-        val totalScreenTime = aggregatedStats.entries.asSequence()
-            .filter { it.key != context.packageName && it.value > 0 }
-            .sumOf { it.value }
-
-        val topAppsList = nonSystemUsage.entries
-            .map { (pkg, time) ->
-                val appName = resolveAppName(packageManager, pkg)
-                AppUsageInfo(
-                    packageName = pkg,
-                    appName = appName,
-                    totalTimeMillis = time,
-                    category = getCategory(context, pkg)
-                )
-            }
-            .sortedByDescending { it.totalTimeMillis }
-            .take(MAX_TOP_APPS)
-
-        return DailyUsageSummary(
-            totalScreenTimeMillis = totalScreenTime,
-            weightedScreenTimeMillis = nonSystemUsage.entries.sumOf { (pkg, time) ->
-                (time * getCategory(context, pkg).scoreWeight).toLong()
-            },
-            topApps = topAppsList,
-            dayTimestamp = dayStart
-        )
-    }
-
-    /**
-     * Fetches daily usage summary for the last 7 days.
-     */
-    fun getWeeklyTrend(context: Context): List<DailyUsageSummary> {
-        if (!hasUsagePermission(context)) return emptyList()
-
-        val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-        val results = mutableListOf<DailyUsageSummary>()
-
-        val calendar = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-
-        val packageManager = context.packageManager
-        val launcherPackage = getLauncherPackageName(packageManager)
-
-        val appNameCache = mutableMapOf<String, String>()
-        val categoryCache = mutableMapOf<String, AppCategory>()
-        val isSystemCache = mutableMapOf<String, Boolean>()
-
-        // Iterate backwards from today
-        for (i in 0 until 7) {
-            val dayStart = calendar.timeInMillis
-            val endCal = calendar.clone() as Calendar
-            endCal.add(Calendar.DAY_OF_YEAR, 1)
-            val dayEnd = if (i == 0) System.currentTimeMillis() else endCal.timeInMillis - 1
-
-            // Use the accurate event-based method for all days to avoid timezone/bucket issues
             val aggregatedStats = getUsageFromEvents(usageStatsManager, dayStart, dayEnd)
 
             val nonSystemUsage = aggregatedStats.filter { (pkg, time) ->
-                val isSys = isSystemCache.getOrPut(pkg) { isSystemApp(packageManager, pkg) }
                 time > 0 &&
-                pkg != context.packageName &&
-                !isSys &&
-                pkg != launcherPackage &&
-                pkg != "com.android.systemui" &&
-                pkg != "android" &&
-                !pkg.lowercase().contains("launcher") &&
-                pkg != "com.google.android.googlequicksearchbox"
+                    pkg != context.packageName &&
+                    !isSystemOrLauncherPackage(packageManager, pkg, launcherPackage)
             }
 
-            val totalScreenTime = aggregatedStats.entries
+            val totalScreenTime = aggregatedStats.entries.asSequence()
                 .filter { it.key != context.packageName && it.value > 0 }
                 .sumOf { it.value }
 
             val topAppsList = nonSystemUsage.entries
                 .map { (pkg, time) ->
-                    val appName = appNameCache.getOrPut(pkg) { resolveAppName(packageManager, pkg) }
-                    val category = categoryCache.getOrPut(pkg) { getCategory(context, pkg) }
+                    val appName = resolveAppName(packageManager, pkg)
                     AppUsageInfo(
                         packageName = pkg,
                         appName = appName,
                         totalTimeMillis = time,
-                        category = category
+                        category = getCategory(context, pkg)
                     )
                 }
                 .sortedByDescending { it.totalTimeMillis }
                 .take(MAX_TOP_APPS)
 
-            results.add(
-                DailyUsageSummary(
-                    totalScreenTimeMillis = totalScreenTime,
-                    weightedScreenTimeMillis = nonSystemUsage.entries.sumOf { (pkg, time) ->
-                        val category = categoryCache.getOrPut(pkg) { getCategory(context, pkg) }
-                        (time * category.scoreWeight).toLong()
-                    },
-                    topApps = topAppsList,
-                    dayTimestamp = dayStart
-                )
+            DailyUsageSummary(
+                totalScreenTimeMillis = totalScreenTime,
+                weightedScreenTimeMillis = nonSystemUsage.entries.sumOf { (pkg, time) ->
+                    (time * getCategory(context, pkg).scoreWeight).toLong()
+                },
+                topApps = topAppsList,
+                dayTimestamp = dayStart
             )
-
-            calendar.add(Calendar.DAY_OF_YEAR, -1)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to compute summary for dayStart=$dayStart", e)
+            DailyUsageSummary.EMPTY
         }
+    }
 
-        return results.reversed()
+    private fun isSystemOrLauncherPackage(
+        packageManager: PackageManager,
+        packageName: String,
+        launcherPackage: String?
+    ): Boolean {
+        return isSystemApp(packageManager, packageName) ||
+            packageName == launcherPackage ||
+            packageName == "com.android.systemui" ||
+            packageName == "android" ||
+            packageName.lowercase().contains("launcher") ||
+            packageName == "com.google.android.googlequicksearchbox"
     }
 
     private fun getUsageFromEvents(usm: UsageStatsManager, startTime: Long, endTime: Long): Map<String, Long> {
@@ -342,27 +269,28 @@ object UsageStatsHelper {
     }
 
     private fun isSystemApp(pm: PackageManager, packageName: String): Boolean {
-        return try {
-            val hasLauncher = pm.getLaunchIntentForPackage(packageName) != null
-
-            // Filter out apps without launcher icons (background services/system components)
-            if (!hasLauncher) return true
-
-            // Special cases for common UI components that have launcher intents but aren't "apps"
-            if (packageName == "com.android.settings") return false // We want to track settings usage
-
-            false
-        } catch (_: Exception) {
-            true
+        return systemAppCache.getOrPut(packageName) {
+            try {
+                if (packageName == "com.android.settings") {
+                    false
+                } else {
+                    pm.getLaunchIntentForPackage(packageName) == null
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to check launcher intent for $packageName", e)
+                true
+            }
         }
     }
 
     private fun resolveAppName(packageManager: PackageManager, packageName: String): String {
-        return try {
-            val appInfo = packageManager.getApplicationInfo(packageName, 0)
-            packageManager.getApplicationLabel(appInfo).toString()
-        } catch (_: PackageManager.NameNotFoundException) {
-            packageName
+        return appNameCache.getOrPut(packageName) {
+            try {
+                val appInfo = packageManager.getApplicationInfo(packageName, 0)
+                packageManager.getApplicationLabel(appInfo).toString()
+            } catch (_: PackageManager.NameNotFoundException) {
+                packageName
+            }
         }
     }
 
@@ -375,7 +303,7 @@ object UsageStatsHelper {
     }
 
     private fun getCategory(context: Context, packageName: String): AppCategory {
-        return com.hsissa.zentra.core.SettingsManager(context).getAppCategory(packageName)
+        return SettingsManager.getInstance(context).getAppCategory(packageName)
             ?: when {
                 PRODUCTIVE_PACKAGES.any { packageName.contains(it) } -> AppCategory.PRODUCTIVE
                 DISTRACTING_PACKAGES.any { packageName.contains(it) } -> AppCategory.DISTRACTING
@@ -413,8 +341,7 @@ object UsageStatsHelper {
     )
 
     private const val MAX_TOP_APPS = 3
-    private const val UNEXPECTED_EMPTY_THRESHOLD_MILLIS = 15 * 60 * 1000L // Treat empty data as expected for the first 15 minutes after local midnight (startOfDay).
-    private const val PROBE_WINDOW_MILLIS = 60 * 60 * 1000L
+    private const val UNEXPECTED_EMPTY_THRESHOLD_MILLIS = 15 * 60 * 1000L
 }
 
 sealed class TodayUsageResult {
@@ -442,12 +369,14 @@ data class DailyUsageSummary(
 
 /**
  * Simple data class representing one app's usage info.
+ * Annotated with @Keep and @SerializedName to remain safe under R8 obfuscation.
  */
+@Keep
 data class AppUsageInfo(
-    val packageName: String,
-    val appName: String,
-    val totalTimeMillis: Long,
-    val category: AppCategory = AppCategory.NEUTRAL
+    @SerializedName("packageName") val packageName: String,
+    @SerializedName("appName") val appName: String,
+    @SerializedName("totalTimeMillis") val totalTimeMillis: Long,
+    @SerializedName("category") val category: AppCategory = AppCategory.NEUTRAL
 ) {
     /** Convenience property: total usage time in minutes. */
     val totalTimeMinutes: Long get() = totalTimeMillis / 1000 / 60
@@ -457,9 +386,10 @@ data class AppUsageInfo(
         get() = TimeFormatter.formatMillis(totalTimeMillis)
 }
 
+@Keep
 enum class AppCategory(val displayName: String, val scoreWeight: Double) {
-    PRODUCTIVE("Productive", 0.2), // Only 20% of time counts towards penalty
-    NEUTRAL("Neutral", 1.0),       // 100% of time counts
-    DISTRACTING("Distracting", 2.0), // 200% of time counts (double penalty)
-    SYSTEM("System", 0.0)         // System apps don't count towards score
+    @SerializedName("PRODUCTIVE") PRODUCTIVE("Productive", 0.2),
+    @SerializedName("NEUTRAL") NEUTRAL("Neutral", 1.0),
+    @SerializedName("DISTRACTING") DISTRACTING("Distracting", 2.0),
+    @SerializedName("SYSTEM") SYSTEM("System", 0.0)
 }

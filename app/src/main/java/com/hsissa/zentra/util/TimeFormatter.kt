@@ -1,15 +1,14 @@
 package com.hsissa.zentra.util
 
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 /**
- * Utility for formatting time durations.
+ * Thread-safe utility for formatting time durations and dates using java.time.
  */
 object TimeFormatter {
-
-    private val dateFormat = SimpleDateFormat("MMM dd", Locale.getDefault())
 
     /**
      * Formats milliseconds into a human-readable string.
@@ -27,6 +26,9 @@ object TimeFormatter {
     }
 
     fun formatDate(timestamp: Long): String {
-        return dateFormat.format(Date(timestamp))
+        val formatter = DateTimeFormatter.ofPattern("MMM dd", Locale.getDefault())
+        return Instant.ofEpochMilli(timestamp)
+            .atZone(ZoneId.systemDefault())
+            .format(formatter)
     }
 }

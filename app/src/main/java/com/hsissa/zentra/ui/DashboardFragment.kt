@@ -21,6 +21,7 @@ import com.hsissa.zentra.ui.dashboard.DashboardViewModel
 import com.hsissa.zentra.util.TimeFormatter
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.Locale
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class DashboardFragment : Fragment() {
@@ -33,7 +34,8 @@ class DashboardFragment : Fragment() {
     private var countDownTimer: CountDownTimer? = null
     private var isFocusRunning = false
 
-    private lateinit var settingsManager: SettingsManager
+    @Inject
+    lateinit var settingsManager: SettingsManager
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -46,7 +48,9 @@ class DashboardFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        settingsManager = SettingsManager(requireContext())
+        if (!::settingsManager.isInitialized) {
+            settingsManager = SettingsManager.getInstance(requireContext())
+        }
 
         setupClickListeners()
         observeViewModel()

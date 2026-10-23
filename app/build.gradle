@@ -1,8 +1,17 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'com.google.devtools.ksp'
     id 'dagger.hilt.android.plugin'
+}
+
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
 android {
@@ -19,15 +28,37 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        release {
+            def keystorePath = System.getenv("ZENTRA_KEYSTORE_PATH") ?: keystoreProperties.getProperty("storeFile")
+            if (keystorePath != null && !keystorePath.trim().isEmpty()) {
+                storeFile file(keystorePath)
+                storePassword System.getenv("ZENTRA_KEYSTORE_PASSWORD") ?: keystoreProperties.getProperty("storePassword")
+                keyAlias System.getenv("ZENTRA_KEY_ALIAS") ?: keystoreProperties.getProperty("keyAlias")
+                keyPassword System.getenv("ZENTRA_KEY_PASSWORD") ?: keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
+        debug {
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-debug"
+            debuggable true
+        }
         release {
             minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (signingConfigs.release.storeFile != null) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
 
     compileOptions {
@@ -38,6 +69,21 @@ android {
     kotlinOptions {
         jvmTarget = '17'
     }
+
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+
+    lint {
+        abortOnError true
+        checkReleaseBuilds true
+        warningsAsErrors false
+    }
+}
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+    arg("room.incremental", "true")
 }
 
 dependencies {

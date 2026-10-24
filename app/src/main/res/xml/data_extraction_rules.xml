@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <data-extraction-rules>
     <cloud-backup>
-        <include domain="file" path="."/>
+        <exclude domain="sharedpref" path="zentra_settings.xml" />
+        <exclude domain="sharedpref" path="__androidx_security_crypto_encrypted_prefs_key_keyset__.xml" />
+        <exclude domain="sharedpref" path="__androidx_security_crypto_encrypted_prefs_value_keyset__.xml" />
     </cloud-backup>
     <device-transfer>
-        <include domain="file" path="."/>
+        <exclude domain="sharedpref" path="zentra_settings.xml" />
+        <exclude domain="sharedpref" path="__androidx_security_crypto_encrypted_prefs_key_keyset__.xml" />
+        <exclude domain="sharedpref" path="__androidx_security_crypto_encrypted_prefs_value_keyset__.xml" />
     </device-transfer>
 </data-extraction-rules>

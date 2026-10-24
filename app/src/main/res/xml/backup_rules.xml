@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <full-backup-content>
-    <include domain="file" path="."/>
+    <!-- Exclude EncryptedSharedPreferences files whose MasterKey is hardware-bound in Android Keystore -->
+    <exclude domain="sharedpref" path="zentra_settings.xml" />
+    <exclude domain="sharedpref" path="__androidx_security_crypto_encrypted_prefs_key_keyset__.xml" />
+    <exclude domain="sharedpref" path="__androidx_security_crypto_encrypted_prefs_value_keyset__.xml" />
 </full-backup-content>

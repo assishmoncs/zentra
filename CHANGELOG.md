@@ -2,7 +2,9 @@
 
 All notable changes to Zentra are documented here.
 
-## Phase 4 — Production Readiness & Hardening
+## [2.5.0] - 2026-10-27
+
+### Phase 4 — Production Readiness & Hardening
 - Fixed Android 14 (API 34) foreground service permission crash by declaring `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE`, and `PROPERTY_SPECIAL_USE_FGS_SUBTYPE` in `AndroidManifest.xml`.
 - Replaced restricted `QUERY_ALL_PACKAGES` permission with scoped `<queries>` launcher intent filter.
 - Added `res/xml/backup_rules.xml` and `res/xml/data_extraction_rules.xml` to exclude hardware-bound `EncryptedSharedPreferences` from cloud/device-transfer backups.

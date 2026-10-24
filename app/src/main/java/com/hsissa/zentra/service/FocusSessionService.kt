@@ -13,13 +13,24 @@ import android.os.CountDownTimer
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.hsissa.zentra.R
+import com.hsissa.zentra.data.local.AppDatabase
+import com.hsissa.zentra.data.local.FocusSessionEntity
+import com.hsissa.zentra.data.local.FocusStreakEntity
 import com.hsissa.zentra.ui.MainActivity
 import java.util.Locale
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 class FocusSessionService : Service() {
 
     private val binder = LocalBinder()
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var countDownTimer: CountDownTimer? = null
+    private var activeDurationMinutes: Int = DEFAULT_DURATION_MINUTES
+
     var isRunning = false
         private set
     var remainingTimeMillis: Long = 0
@@ -39,11 +50,26 @@ class FocusSessionService : Service() {
         createNotificationChannel()
     }
 
-    fun startSession(durationMinutes: Int) {
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        when (intent?.action) {
+            ACTION_START_SESSION -> {
+                val minutes = intent.getIntExtra(EXTRA_DURATION_MINUTES, DEFAULT_DURATION_MINUTES)
+                startSession(minutes)
+            }
+            ACTION_STOP_SESSION -> {
+                stopSession()
+            }
+        }
+        return START_NOT_STICKY
+    }
+
+    fun startSession(durationMinutes: Int = DEFAULT_DURATION_MINUTES) {
         countDownTimer?.cancel()
+        activeDurationMinutes = durationMinutes
         val totalMs = durationMinutes * 60 * 1000L
         remainingTimeMillis = totalMs
         isRunning = true
+        isSessionActive = true
 
         // Use native Android chronometer countdown instead of per-second Binder notify() calls
         startForeground(
@@ -64,7 +90,9 @@ class FocusSessionService : Service() {
 
             override fun onFinish() {
                 isRunning = false
+                isSessionActive = false
                 remainingTimeMillis = 0
+                recordCompletedSession(activeDurationMinutes)
                 onFinishListener?.invoke()
                 updateNotification(
                     title = "Focus Session Finished!",
@@ -80,13 +108,41 @@ class FocusSessionService : Service() {
     fun stopSession() {
         countDownTimer?.cancel()
         isRunning = false
+        isSessionActive = false
         remainingTimeMillis = 0
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
 
+    private fun recordCompletedSession(durationMinutes: Int) {
+        val now = System.currentTimeMillis()
+        serviceScope.launch {
+            val dao = AppDatabase.getDatabase(applicationContext).usageDao()
+            dao.insertFocusSession(
+                FocusSessionEntity(
+                    durationMinutes = durationMinutes,
+                    timestamp = now,
+                    completed = true,
+                    sessionType = if (durationMinutes >= 45) "Deep Focus" else "Pomodoro"
+                )
+            )
+            val currentStreakEntity = dao.getFocusStreak() ?: FocusStreakEntity()
+            val newStreak = currentStreakEntity.currentStreak + 1
+            dao.insertFocusStreak(
+                currentStreakEntity.copy(
+                    currentStreak = newStreak,
+                    longestStreak = maxOf(currentStreakEntity.longestStreak, newStreak),
+                    totalFocusMinutes = currentStreakEntity.totalFocusMinutes + durationMinutes,
+                    lastGoalMetTimestamp = now
+                )
+            )
+        }
+    }
+
     override fun onDestroy() {
         countDownTimer?.cancel()
+        isSessionActive = false
+        serviceScope.cancel()
         super.onDestroy()
     }
 
@@ -154,5 +210,13 @@ class FocusSessionService : Service() {
     companion object {
         const val CHANNEL_ID = "focus_session_channel"
         const val NOTIFICATION_ID = 2001
+        const val ACTION_START_SESSION = "com.hsissa.zentra.action.START_FOCUS_SESSION"
+        const val ACTION_STOP_SESSION = "com.hsissa.zentra.action.STOP_FOCUS_SESSION"
+        const val EXTRA_DURATION_MINUTES = "extra_duration_minutes"
+        const val DEFAULT_DURATION_MINUTES = 25
+
+        @Volatile
+        var isSessionActive: Boolean = false
+            private set
     }
 }

@@ -22,10 +22,14 @@ android {
         applicationId "com.hsissa.zentra"
         minSdk 26
         targetSdk 34
-        versionCode 5
-        versionName "2.3"
+        versionCode 6
+        versionName "2.5"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    sourceSets {
+        androidTest.assets.srcDirs += files("$projectDir/schemas".toString())
     }
 
     signingConfigs {
@@ -118,4 +122,10 @@ dependencies {
     testImplementation libs.junit
     testImplementation libs.kotlinx.coroutines.test
     testImplementation libs.androidx.arch.core.testing
+
+    androidTestImplementation libs.androidx.test.ext.junit
+    androidTestImplementation libs.androidx.test.espresso.core
+    androidTestImplementation libs.androidx.room.testing
+    androidTestImplementation libs.androidx.work.testing
+    androidTestImplementation libs.kotlinx.coroutines.test
 }

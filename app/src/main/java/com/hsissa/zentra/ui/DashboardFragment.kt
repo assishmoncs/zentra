@@ -1,8 +1,11 @@
 package com.hsissa.zentra.ui
 
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Bundle
-import android.os.CountDownTimer
+import android.os.IBinder
 import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
@@ -15,10 +18,12 @@ import com.hsissa.zentra.core.ScoreManager
 import com.hsissa.zentra.core.SettingsManager
 import com.hsissa.zentra.databinding.FragmentDashboardBinding
 import com.hsissa.zentra.service.DailyUsageSummary
+import com.hsissa.zentra.service.FocusSessionService
 import com.hsissa.zentra.service.TodayUsageResult
 import com.hsissa.zentra.service.UsageStatsHelper
 import com.hsissa.zentra.ui.dashboard.DashboardViewModel
 import com.hsissa.zentra.util.TimeFormatter
+import com.hsissa.zentra.widget.ZentraWidgetProvider
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.Locale
 import javax.inject.Inject
@@ -31,11 +36,35 @@ class DashboardFragment : Fragment() {
 
     private val viewModel: DashboardViewModel by viewModels()
 
-    private var countDownTimer: CountDownTimer? = null
-    private var isFocusRunning = false
+    private var focusService: FocusSessionService? = null
+    private var isServiceBound = false
 
     @Inject
     lateinit var settingsManager: SettingsManager
+
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as? FocusSessionService.LocalBinder ?: return
+            focusService = binder.getService().also { activeService ->
+                isServiceBound = true
+                syncFocusUiWithService(activeService)
+                activeService.onTickListener = { millisUntilFinished ->
+                    _binding?.tvFocusTimer?.text = formatTimer(millisUntilFinished)
+                }
+                activeService.onFinishListener = {
+                    _binding?.let { b ->
+                        b.tvFocusTimer.text = getString(R.string.focus_session_finished)
+                        b.btnFocusToggle.text = getString(R.string.focus_session_start)
+                    }
+                }
+            }
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            focusService = null
+            isServiceBound = false
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -54,6 +83,22 @@ class DashboardFragment : Fragment() {
 
         setupClickListeners()
         observeViewModel()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val intent = Intent(requireContext(), FocusSessionService::class.java)
+        requireContext().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+    }
+
+    override fun onStop() {
+        focusService?.onTickListener = null
+        focusService?.onFinishListener = null
+        if (isServiceBound) {
+            requireContext().unbindService(serviceConnection)
+            isServiceBound = false
+        }
+        super.onStop()
     }
 
     private fun setupClickListeners() {
@@ -131,7 +176,6 @@ class DashboardFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        countDownTimer?.cancel()
         _binding = null
         super.onDestroyView()
     }
@@ -154,6 +198,9 @@ class DashboardFragment : Fragment() {
     private fun renderSummary(usageSummary: DailyUsageSummary) {
         val score = ScoreManager.computeScore(usageSummary.weightedScreenTimeMillis)
         val feedbackResId = ScoreManager.getFeedbackResId(score)
+
+        settingsManager.setLastFocusScore(score)
+        ZentraWidgetProvider.notifyWidgetDataChanged(requireContext())
 
         binding.tvScore.text = score.toString()
         binding.tvScore.contentDescription = getString(
@@ -240,8 +287,19 @@ class DashboardFragment : Fragment() {
         binding.btnRetry.visibility = View.GONE
     }
 
+    private fun syncFocusUiWithService(service: FocusSessionService) {
+        if (service.isRunning) {
+            binding.btnFocusToggle.text = getString(R.string.focus_session_stop)
+            binding.tvFocusTimer.text = formatTimer(service.remainingTimeMillis)
+        } else {
+            binding.btnFocusToggle.text = getString(R.string.focus_session_start)
+            binding.tvFocusTimer.text = getString(R.string.focus_session_timer_placeholder)
+        }
+    }
+
     private fun toggleFocusSession() {
-        if (isFocusRunning) {
+        val running = focusService?.isRunning == true || FocusSessionService.isSessionActive
+        if (running) {
             stopFocusSession()
         } else {
             startFocusSession()
@@ -249,29 +307,29 @@ class DashboardFragment : Fragment() {
     }
 
     private fun startFocusSession() {
-        isFocusRunning = true
+        val startIntent = Intent(requireContext(), FocusSessionService::class.java).apply {
+            action = FocusSessionService.ACTION_START_SESSION
+            putExtra(FocusSessionService.EXTRA_DURATION_MINUTES, FocusSessionService.DEFAULT_DURATION_MINUTES)
+        }
+        ContextCompat.startForegroundService(requireContext(), startIntent)
         binding.btnFocusToggle.text = getString(R.string.focus_session_stop)
-
-        countDownTimer = object : CountDownTimer(FOCUS_DURATION_MS, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                val minutes = (millisUntilFinished / 1000) / 60
-                val seconds = (millisUntilFinished / 1000) % 60
-                binding.tvFocusTimer.text = String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
-            }
-
-            override fun onFinish() {
-                isFocusRunning = false
-                binding.tvFocusTimer.text = getString(R.string.focus_session_finished)
-                binding.btnFocusToggle.text = getString(R.string.focus_session_start)
-            }
-        }.start()
     }
 
     private fun stopFocusSession() {
-        countDownTimer?.cancel()
-        isFocusRunning = false
+        focusService?.stopSession() ?: run {
+            val stopIntent = Intent(requireContext(), FocusSessionService::class.java).apply {
+                action = FocusSessionService.ACTION_STOP_SESSION
+            }
+            requireContext().startService(stopIntent)
+        }
         binding.btnFocusToggle.text = getString(R.string.focus_session_start)
         binding.tvFocusTimer.text = getString(R.string.focus_session_timer_placeholder)
+    }
+
+    private fun formatTimer(millisUntilFinished: Long): String {
+        val minutes = (millisUntilFinished / 1000) / 60
+        val seconds = (millisUntilFinished / 1000) % 60
+        return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
     }
 
     private fun scoreColor(score: Int): Int {
@@ -280,9 +338,5 @@ class DashboardFragment : Fragment() {
             ScoreManager.isMidScore(score) -> ContextCompat.getColor(requireContext(), R.color.score_mid)
             else -> ContextCompat.getColor(requireContext(), R.color.score_low)
         }
-    }
-
-    companion object {
-        private const val FOCUS_DURATION_MS = 25 * 60 * 1000L
     }
 }

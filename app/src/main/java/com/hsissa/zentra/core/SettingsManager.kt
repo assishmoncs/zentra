@@ -8,12 +8,13 @@ import androidx.security.crypto.MasterKey
 import com.hsissa.zentra.service.AppCategory
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.security.GeneralSecurityException
+import java.time.LocalTime
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Manages user preferences including custom app categories and goals.
+ * Manages user preferences including custom app categories, goals, quiet hours, and cached widget score.
  * Uses EncryptedSharedPreferences with automatic recovery from Keystore corruption
  * and an in-memory cache to avoid repeated cryptographic/disk lookups inside loops.
  */
@@ -96,6 +97,15 @@ class SettingsManager @Inject constructor(
         return prefs.getInt(KEY_DAILY_GOAL, DEFAULT_DAILY_GOAL)
     }
 
+    fun setLastFocusScore(score: Int) {
+        prefs.edit().putInt(KEY_LAST_FOCUS_SCORE, score.coerceIn(0, 100)).apply()
+    }
+
+    fun getLastFocusScore(): Int? {
+        val value = prefs.getInt(KEY_LAST_FOCUS_SCORE, -1)
+        return value.takeIf { it in 0..100 }
+    }
+
     fun setQuietHoursEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_QUIET_HOURS_ENABLED, enabled).apply()
     }
@@ -132,11 +142,30 @@ class SettingsManager @Inject constructor(
         )
     }
 
+    /**
+     * Checks whether the given LocalTime falls within the user's configured Quiet Hours window.
+     * Supports overnight windows (e.g. 22:00 to 07:00) as well as same-day windows.
+     */
+    fun isWithinQuietHours(now: LocalTime = LocalTime.now()): Boolean {
+        if (!isQuietHoursEnabled()) return false
+        val (startH, startM) = getQuietHoursStart()
+        val (endH, endM) = getQuietHoursEnd()
+        val start = LocalTime.of(startH.coerceIn(0, 23), startM.coerceIn(0, 59))
+        val end = LocalTime.of(endH.coerceIn(0, 23), endM.coerceIn(0, 59))
+
+        return if (start <= end) {
+            !now.isBefore(start) && !now.isAfter(end)
+        } else {
+            !now.isBefore(start) || !now.isAfter(end)
+        }
+    }
+
     companion object {
         private const val TAG = "SettingsManager"
         private const val PREFS_NAME = "zentra_settings"
         private const val KEY_PREFIX_CATEGORY = "cat_"
         private const val KEY_DAILY_GOAL = "daily_goal"
+        private const val KEY_LAST_FOCUS_SCORE = "last_focus_score"
         private const val KEY_QUIET_HOURS_ENABLED = "quiet_hours_enabled"
         private const val KEY_QUIET_HOURS_START_HOUR = "quiet_hours_start_h"
         private const val KEY_QUIET_HOURS_START_MIN = "quiet_hours_start_m"

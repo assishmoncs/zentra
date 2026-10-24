@@ -10,6 +10,7 @@ import com.hsissa.zentra.service.DailyUsageSummary
 import com.hsissa.zentra.service.TodayUsageResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -37,6 +38,8 @@ class InsightsViewModel @Inject constructor(
             try {
                 _weeklyTrend.value = getWeeklyTrend()
                 _todayUsage.value = getTodayUsage()
+            } catch (e: CancellationException) {
+                throw e
             } catch (_: Exception) {
                 _hasLoadError.value = true
             } finally {

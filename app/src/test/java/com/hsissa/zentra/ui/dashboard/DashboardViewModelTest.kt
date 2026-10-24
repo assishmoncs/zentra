@@ -1,11 +1,11 @@
 package com.hsissa.zentra.ui.dashboard
 
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.hsissa.zentra.domain.repository.UsageRepositoryContract
 import com.hsissa.zentra.domain.usecase.GetTodayUsageUseCase
 import com.hsissa.zentra.domain.usecase.GetWeeklyTrendUseCase
 import com.hsissa.zentra.service.DailyUsageSummary
 import com.hsissa.zentra.service.TodayUsageResult
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -13,11 +13,12 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import org.junit.Rule
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -52,8 +53,29 @@ class DashboardViewModelTest {
         advanceUntilIdle()
 
         assertFalse(viewModel.isLoading.value == true)
+        assertFalse(viewModel.hasLoadError.value == true)
         assertEquals(today, viewModel.todayUsage.value)
         assertEquals(trend, viewModel.weeklyTrend.value)
+    }
+
+    @Test
+    fun loadData_failure_publishesErrorStateAndClearsLoading() = runTest {
+        val repository = FakeRepository(
+            today = TodayUsageResult.Success(summary(30L)),
+            trend = emptyList(),
+            throwOnRead = true
+        )
+        val viewModel = DashboardViewModel(
+            GetTodayUsageUseCase(repository),
+            GetWeeklyTrendUseCase(repository)
+        )
+
+        viewModel.loadData()
+        advanceUntilIdle()
+
+        assertFalse(viewModel.isLoading.value == true)
+        assertTrue(viewModel.hasLoadError.value == true)
+        assertEquals(TodayUsageResult.Error, viewModel.todayUsage.value)
     }
 
     private fun summary(time: Long) = DailyUsageSummary(
@@ -64,11 +86,18 @@ class DashboardViewModelTest {
 
     private class FakeRepository(
         private val today: TodayUsageResult,
-        private val trend: List<DailyUsageSummary>
+        private val trend: List<DailyUsageSummary>,
+        private val throwOnRead: Boolean = false
     ) : UsageRepositoryContract {
 
-        override suspend fun getTodayUsage(): TodayUsageResult = today
+        override suspend fun getTodayUsage(): TodayUsageResult {
+            check(!throwOnRead) { "Simulated repository failure" }
+            return today
+        }
 
-        override suspend fun getWeeklyTrend(): List<DailyUsageSummary> = trend
+        override suspend fun getWeeklyTrend(): List<DailyUsageSummary> {
+            check(!throwOnRead) { "Simulated repository failure" }
+            return trend
+        }
     }
 }

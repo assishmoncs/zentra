@@ -2,13 +2,18 @@ package com.hsissa.zentra.util
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.hsissa.zentra.R
+import com.hsissa.zentra.ui.MindfulnessOverlayActivity
 
 object NotificationHelper {
+    private const val TAG = "NotificationHelper"
     private const val CHANNEL_ID = "mindfulness_alerts"
     private const val CHANNEL_NAME = "Mindfulness Alerts"
     private const val CHANNEL_DESC = "Notifications to help you stay mindful of your digital usage."
@@ -25,23 +30,40 @@ object NotificationHelper {
         }
     }
 
-    fun showMindfulnessNotification(context: Context, title: String, message: String) {
+    fun showMindfulnessNotification(
+        context: Context,
+        title: String,
+        message: String,
+        exceededAppName: String? = null
+    ) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (androidx.core.content.ContextCompat.checkSelfPermission(
                     context,
                     android.Manifest.permission.POST_NOTIFICATIONS
                 ) != android.content.pm.PackageManager.PERMISSION_GRANTED
             ) {
-                // Permission not granted, we can't show notification.
-                // In a real app, we might want to request it in UI.
                 return
             }
         }
+
+        val overlayIntent = Intent(context, MindfulnessOverlayActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            if (!exceededAppName.isNullOrBlank()) {
+                putExtra(MindfulnessOverlayActivity.EXTRA_APP_NAME, exceededAppName)
+            }
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            0,
+            overlayIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(title)
             .setContentText(message)
+            .setContentIntent(pendingIntent)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
 
@@ -50,7 +72,7 @@ object NotificationHelper {
                 notify(System.currentTimeMillis().toInt(), builder.build())
             }
         } catch (e: SecurityException) {
-            // Handle cases where permission is revoked just before notify
+            Log.w(TAG, "Notification permission revoked before notify()", e)
         }
     }
 }

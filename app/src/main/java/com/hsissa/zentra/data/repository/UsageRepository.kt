@@ -5,11 +5,12 @@ import com.hsissa.zentra.data.datasource.UsageStatsDataSource
 import com.hsissa.zentra.domain.repository.UsageRepositoryContract
 import com.hsissa.zentra.service.DailyUsageSummary
 import com.hsissa.zentra.service.TodayUsageResult
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.util.Calendar
+import java.time.LocalDate
+import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Singleton
 class UsageRepository @Inject constructor(
@@ -26,19 +27,15 @@ class UsageRepository @Inject constructor(
     }
 
     override suspend fun getWeeklyTrend(): List<DailyUsageSummary> = withContext(Dispatchers.IO) {
-        val calendar = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
+        val zoneId = ZoneId.systemDefault()
+        val today = LocalDate.now(zoneId)
         val results = mutableListOf<DailyUsageSummary>()
 
         for (i in 0 until 7) {
-            val dayStart = calendar.timeInMillis
-            val endCal = calendar.clone() as Calendar
-            endCal.add(Calendar.DAY_OF_YEAR, 1)
-            val dayEnd = if (i == 0) System.currentTimeMillis() else endCal.timeInMillis - 1
+            val targetDate = today.minusDays(i.toLong())
+            val dayStart = targetDate.atStartOfDay(zoneId).toInstant().toEpochMilli()
+            val nextDayStart = targetDate.plusDays(1).atStartOfDay(zoneId).toInstant().toEpochMilli()
+            val dayEnd = if (i == 0) System.currentTimeMillis() else nextDayStart - 1
 
             val cachedRecord = usageLocalDataSource.get(dayStart)
 
@@ -59,8 +56,6 @@ class UsageRepository @Inject constructor(
                 }
                 results.add(systemSummary)
             }
-
-            calendar.add(Calendar.DAY_OF_YEAR, -1)
         }
 
         results.reversed()

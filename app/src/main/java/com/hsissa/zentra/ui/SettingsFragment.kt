@@ -18,11 +18,12 @@ import com.hsissa.zentra.core.SettingsManager
 import com.hsissa.zentra.databinding.DialogAppSearchBinding
 import com.hsissa.zentra.databinding.FragmentSettingsBinding
 import com.hsissa.zentra.service.AppCategory
+import dagger.hilt.android.AndroidEntryPoint
+import java.util.Locale
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Locale
-import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class SettingsFragment : Fragment() {
@@ -30,8 +31,10 @@ class SettingsFragment : Fragment() {
     private var _binding: FragmentSettingsBinding? = null
     private val binding get() = _binding!!
 
+    @Inject
+    lateinit var settingsManager: SettingsManager
+
     private lateinit var adapter: AppCategoryAdapter
-    private lateinit var settingsManager: SettingsManager
     private var allApps: List<AppItem> = emptyList()
 
     override fun onCreateView(
@@ -45,7 +48,9 @@ class SettingsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        settingsManager = SettingsManager(requireContext())
+        if (!::settingsManager.isInitialized) {
+            settingsManager = SettingsManager.getInstance(requireContext())
+        }
 
         setupGoalSlider()
         setupQuietHours()
@@ -75,7 +80,7 @@ class SettingsFragment : Fragment() {
 
     private fun setupRecyclerView() {
         adapter = AppCategoryAdapter(emptyList()) { app ->
-            showCategoryPicker(app)
+            showCategoryPicker(app, adapter)
         }
         binding.rvAppCategories.adapter = adapter
     }
@@ -90,9 +95,10 @@ class SettingsFragment : Fragment() {
 
     private fun showSearchDialog() {
         val dialogBinding = DialogAppSearchBinding.inflate(layoutInflater)
-        
-        val searchAdapter = AppCategoryAdapter(allApps) { app ->
-            showCategoryPicker(app)
+
+        lateinit var searchAdapter: AppCategoryAdapter
+        searchAdapter = AppCategoryAdapter(allApps) { app ->
+            showCategoryPicker(app, searchAdapter)
         }
         dialogBinding.rvSearchApps.adapter = searchAdapter
 
@@ -178,9 +184,10 @@ class SettingsFragment : Fragment() {
                     .map { appInfo ->
                         val packageName = appInfo.packageName
                         val appName = pm.getApplicationLabel(appInfo).toString()
-                        val icon = pm.getApplicationIcon(appInfo)
                         val category = settingsManager.getAppCategory(packageName) ?: AppCategory.NEUTRAL
-                        AppItem(packageName, appName, icon, category)
+                        // Avoid eagerly decoding Drawable bitmaps for all installed apps into memory;
+                        // AppCategoryAdapter loads and caches icons lazily on bind.
+                        AppItem(packageName = packageName, appName = appName, icon = null, category = category)
                     }.sortedBy { it.appName }
             }
             allApps = appItems
@@ -188,7 +195,7 @@ class SettingsFragment : Fragment() {
         }
     }
 
-    private fun showCategoryPicker(app: AppItem) {
+    private fun showCategoryPicker(app: AppItem, targetAdapter: AppCategoryAdapter) {
         val categories = AppCategory.entries.filter { it != AppCategory.SYSTEM }
         val names = categories.map { it.displayName }.toTypedArray()
 
@@ -199,6 +206,9 @@ class SettingsFragment : Fragment() {
                 settingsManager.setAppCategory(app.packageName, selectedCategory)
                 app.category = selectedCategory
                 adapter.notifyDataSetChanged()
+                if (targetAdapter !== adapter) {
+                    targetAdapter.notifyDataSetChanged()
+                }
             }
             .show()
     }

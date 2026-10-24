@@ -7,12 +7,12 @@ import com.hsissa.zentra.service.UsageStatsHelper
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
-class UsageStatsDataSource @Inject constructor(
-    @ApplicationContext private val context: Context
+open class UsageStatsDataSource @Inject constructor(
+    @ApplicationContext private val context: Context?
 ) {
-    fun getTodayUsage(): TodayUsageResult =
-        UsageStatsHelper.getTodaySummaryResult(context)
+    open fun getTodayUsage(): TodayUsageResult =
+        context?.let { UsageStatsHelper.getTodaySummaryResult(it) } ?: TodayUsageResult.Error
 
-    fun getSummaryForDay(dayStart: Long, dayEnd: Long): DailyUsageSummary =
-        UsageStatsHelper.getSummaryForDay(context, dayStart, dayEnd)
+    open fun getSummaryForDay(dayStart: Long, dayEnd: Long): DailyUsageSummary =
+        context?.let { UsageStatsHelper.getSummaryForDay(it, dayStart, dayEnd) } ?: DailyUsageSummary.EMPTY
 }

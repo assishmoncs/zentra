@@ -6,7 +6,7 @@ Zentra turns Android usage data into a weighted **Focus Score**, combines it wit
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9.22-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
 [![Android](https://img.shields.io/badge/Android-API%2026%2B-3DDC84?logo=android&logoColor=white)](https://developer.android.com/)
-[![Target SDK](https://img.shields.io/badge/Target%20SDK-34-3DDC84?logo=android&logoColor=white)](https://developer.android.com/about/versions/14)
+[![Target SDK](https://img.shields.io/badge/Target%20SDK-36-3DDC84?logo=android&logoColor=white)](https://developer.android.com/about/versions/16)
 [![Java](https://img.shields.io/badge/JDK-17-ED8B00?logo=openjdk&logoColor=white)](https://openjdk.org/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -55,9 +55,9 @@ Higher-weight usage contributes more strongly to the score penalty, allowing the
 - Daily focus-minute history
 
 ### App Limits & Mindfulness
-- Per-app daily usage limits
-- Background monitoring through WorkManager
-- Short breathing/mindfulness intervention when configured limits are reached
+- Per-app daily usage reminders (these do not block apps)
+- Approximate background checks through WorkManager; notifications may be delayed
+- Optional breathing/mindfulness pause from a reminder notification
 - Dedicated mindfulness overlay activity
 
 ### Android System Integration
@@ -159,7 +159,7 @@ app/src/main/java/com/hsissa/zentra/
 
 ## Requirements
 
-- Android Studio with Android SDK 34
+- Android Studio with Android SDK 36
 - JDK 17
 - Android device or emulator
 - Minimum Android version: **Android 8.0 (API 26)**

@@ -15,8 +15,9 @@ To calculate your Focus Score, display daily and 7-day screen-time trends, and p
 ## 2. Local-Only Storage & Zero Off-Device Transmission
 
 * **No Cloud Servers or Analytics SDKs:** Zentra does not request the `android.permission.INTERNET` permission. No usage statistics, installed app lists, Focus Scores, or personal identifiers ever leave your device.
-* **On-Device Persistence:** Historical daily summaries, focus streaks, and app limits are stored locally in the app's private SQLite/Room database (`zentra_database`). User preferences and custom app categorizations are encrypted at rest using Android Keystore-backed `EncryptedSharedPreferences` (`zentra_settings`).
+* **On-Device Persistence:** Historical daily summaries, focus streaks, and app limits are stored locally in the app's private SQLite/Room database (`zentra_database`). User preferences and custom app categorizations normally use Android Keystore-backed `EncryptedSharedPreferences` (`zentra_settings`). If secure preferences cannot be opened, Zentra preserves the encrypted file, displays a warning, and temporarily uses a separate private, unencrypted preferences file. Changes in that fallback file are not automatically merged when secure storage becomes available again.
+* **System backup:** Zentra opts out of cloud backup and excludes its data from configured Android backup and device-transfer rules. Device manufacturers can implement transfer differently, so verify behavior on your device before transferring it.
 
 ## 3. Data Retention & Deletion
 
-You can clear all locally stored usage history, custom categories, and goals at any time by clearing Zentra's storage in **Android Settings → Apps → Zentra → Storage & cache → Clear storage**, or by uninstalling the application.
+You can delete saved summaries and focus history in Zentra's settings. Android may retain its own system usage statistics, so some usage insights can reappear. To clear all locally stored settings and data, use **Android Settings → Apps → Zentra → Storage & cache → Clear storage**, or uninstall the application.

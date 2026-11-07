@@ -3,6 +3,8 @@ package com.hsissa.zentra.ui
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
@@ -13,6 +15,10 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.activity.result.contract.ActivityResultContracts
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import android.text.InputType
+import android.widget.EditText
 import com.hsissa.zentra.R
 import com.hsissa.zentra.core.ScoreManager
 import com.hsissa.zentra.core.SettingsManager
@@ -38,6 +44,11 @@ class DashboardFragment : Fragment() {
 
     private var focusService: FocusSessionService? = null
     private var isServiceBound = false
+    private var pendingFocusSession: Pair<Int, Boolean>? = null
+    private val notificationPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+        pendingFocusSession?.let { (minutes, isBreak) -> launchFocusSession(minutes, isBreak) }
+        pendingFocusSession = null
+    }
 
     @Inject
     lateinit var settingsManager: SettingsManager
@@ -55,6 +66,11 @@ class DashboardFragment : Fragment() {
                     _binding?.let { b ->
                         b.tvFocusTimer.text = getString(R.string.focus_session_finished)
                         b.btnFocusToggle.text = getString(R.string.focus_session_start)
+                        if (!activeService.isBreak && isAdded) {
+                            MaterialAlertDialogBuilder(requireContext()).setMessage(R.string.break_offer)
+                                .setPositiveButton(R.string.break_start) { _, _ -> startFocusSession(5, true) }
+                                .setNegativeButton(R.string.close, null).show()
+                        }
                     }
                 }
             }
@@ -117,7 +133,8 @@ class DashboardFragment : Fragment() {
 
     private fun observeViewModel() {
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            if (isLoading == true) showLoadingState() else hideState()
+            if (isLoading == true) showLoadingState()
+            else viewModel.todayUsage.value?.let(::handleTodayUsageResult)
         }
 
         viewModel.todayUsage.observe(viewLifecycleOwner) { result ->
@@ -126,15 +143,7 @@ class DashboardFragment : Fragment() {
 
         viewModel.weeklyTrend.observe(viewLifecycleOwner) { trend ->
             trend?.takeIf { it.isNotEmpty() }?.let { weeklyTrend ->
-                val totalTime = weeklyTrend.sumOf { it.totalScreenTimeMillis }
-                val totalWeighted = weeklyTrend.sumOf { it.weightedScreenTimeMillis }
-
-                val avgSummary = DailyUsageSummary(
-                    totalScreenTimeMillis = totalTime,
-                    weightedScreenTimeMillis = totalWeighted,
-                    topApps = emptyList()
-                )
-                renderWeeklyTrends(avgSummary)
+                renderWeeklyTrends(weeklyTrend)
             }
         }
     }
@@ -146,18 +155,19 @@ class DashboardFragment : Fragment() {
                 renderSummary(result.summary)
             }
             is TodayUsageResult.Empty -> {
-                renderSummary(result.summary)
                 if (result.isUnexpected) {
+                    clearInvalidScore()
                     showErrorState(
                         getString(R.string.usage_state_unexpected_empty),
                         showRetry = true,
                     )
                 } else {
+                    renderSummary(result.summary)
                     hideState()
                 }
             }
             TodayUsageResult.Error -> {
-                renderSummary(DailyUsageSummary.EMPTY)
+                clearInvalidScore()
                 showErrorState(
                     getString(R.string.usage_state_error),
                     showRetry = true,
@@ -182,7 +192,22 @@ class DashboardFragment : Fragment() {
 
     private fun showPermissionRequest() {
         binding.layoutPermission.visibility = View.VISIBLE
-        binding.layoutContent.visibility = View.GONE
+        binding.layoutContent.visibility = View.VISIBLE
+        clearInvalidScore()
+        binding.tvWeeklyAvgScore.text = getString(R.string.score_unavailable)
+        binding.tvWeeklyTotalTime.text = getString(R.string.score_unavailable)
+    }
+
+    private fun clearInvalidScore() {
+        settingsManager.clearLastFocusScore()
+        ZentraWidgetProvider.notifyWidgetDataChanged(requireContext())
+        binding.tvScore.text = getString(R.string.score_placeholder)
+        binding.tvScore.contentDescription = getString(R.string.usage_state_error)
+        binding.tvFeedback.text = getString(R.string.score_unavailable)
+        binding.tvGoalStatus.text = getString(R.string.score_unavailable)
+        binding.tvTotalTime.text = getString(R.string.score_unavailable)
+        binding.tvNoApps.visibility = View.VISIBLE
+        listOf(binding.tvApp1, binding.tvApp2, binding.tvApp3).forEach { it.visibility = View.GONE }
     }
 
     private fun openUsageAccessSettings() {
@@ -225,16 +250,21 @@ class DashboardFragment : Fragment() {
             binding.tvGoalStatus.text = getString(R.string.goal_reached)
             binding.tvGoalStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.score_high))
         } else {
-            val remaining = dailyGoal - currentScore
-            binding.tvGoalStatus.text = getString(R.string.goal_remaining, remaining)
+            binding.tvGoalStatus.text = getString(R.string.goal_below_target)
             binding.tvGoalStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_secondary))
         }
     }
 
-    private fun renderWeeklyTrends(weeklySummary: DailyUsageSummary) {
+    private fun renderWeeklyTrends(weeklyTrend: List<DailyUsageSummary>) {
         val dailyGoal = settingsManager.getDailyGoal()
-        val avgScore = ScoreManager.computeScore(weeklySummary.weightedScreenTimeMillis / 7)
-        binding.tvWeeklyAvgScore.text = getString(R.string.weekly_avg_score, avgScore)
+        val available = weeklyTrend.filter { it.isAvailable }
+        val avgScore = ScoreManager.averageDailyScore(available)
+        if (avgScore == null) {
+            binding.tvWeeklyAvgScore.text = getString(R.string.score_unavailable)
+            binding.tvWeeklyTotalTime.text = getString(R.string.score_unavailable)
+            return
+        }
+        binding.tvWeeklyAvgScore.text = getString(R.string.weekly_avg_available, avgScore, available.size)
 
         if (avgScore >= dailyGoal) {
             binding.tvWeeklyAvgScore.setTextColor(ContextCompat.getColor(requireContext(), R.color.score_high))
@@ -244,7 +274,7 @@ class DashboardFragment : Fragment() {
 
         binding.tvWeeklyTotalTime.text = getString(
             R.string.weekly_total_time,
-            TimeFormatter.formatMillis(weeklySummary.totalScreenTimeMillis)
+            TimeFormatter.formatMillis(available.sumOf { it.totalScreenTimeMillis })
         )
     }
 
@@ -302,14 +332,57 @@ class DashboardFragment : Fragment() {
         if (running) {
             stopFocusSession()
         } else {
-            startFocusSession()
+            chooseFocusDuration()
         }
     }
 
-    private fun startFocusSession() {
+    private fun chooseFocusDuration() {
+        val options = arrayOf(getString(R.string.focus_25), getString(R.string.focus_45), getString(R.string.focus_60), getString(R.string.focus_custom))
+        MaterialAlertDialogBuilder(requireContext()).setTitle(R.string.focus_choose_duration)
+            .setItems(options) { _, which ->
+                if (which < 3) startFocusSession(listOf(25, 45, 60)[which]) else {
+                    val input = EditText(requireContext()).apply { inputType = InputType.TYPE_CLASS_NUMBER; hint = getString(R.string.limit_minutes_hint) }
+                    val dialog = MaterialAlertDialogBuilder(requireContext()).setTitle(R.string.focus_choose_duration)
+                        .setView(input).setPositiveButton(android.R.string.ok, null)
+                        .setNegativeButton(android.R.string.cancel, null).create()
+                    dialog.setOnShowListener {
+                        dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                            val minutes = input.text.toString().toIntOrNull()
+                            if (minutes == null || minutes !in 1..1440) input.error = getString(R.string.limit_invalid)
+                            else { dialog.dismiss(); startFocusSession(minutes) }
+                        }
+                    }
+                    dialog.show()
+                }
+            }.setNegativeButton(android.R.string.cancel, null).show()
+    }
+
+    private fun startFocusSession(minutes: Int, isBreak: Boolean = false) {
+        if (Build.VERSION.SDK_INT >= 33 && !settingsManager.notificationPermissionRequested() &&
+            ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            pendingFocusSession = minutes to isBreak
+            MaterialAlertDialogBuilder(requireContext()).setMessage(R.string.notification_explanation)
+                .setPositiveButton(android.R.string.ok) { _, _ ->
+                    settingsManager.markNotificationPermissionRequested()
+                    notificationPermission.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                }
+                .setNegativeButton(R.string.focus_without_notifications) { _, _ ->
+                    pendingFocusSession = null
+                    launchFocusSession(minutes, isBreak)
+                }
+                .setOnCancelListener { pendingFocusSession = null }
+                .show()
+            return
+        }
+        launchFocusSession(minutes, isBreak)
+    }
+
+    private fun launchFocusSession(minutes: Int, isBreak: Boolean) {
+        if (!isAdded || _binding == null) return
         val startIntent = Intent(requireContext(), FocusSessionService::class.java).apply {
             action = FocusSessionService.ACTION_START_SESSION
-            putExtra(FocusSessionService.EXTRA_DURATION_MINUTES, FocusSessionService.DEFAULT_DURATION_MINUTES)
+            putExtra(FocusSessionService.EXTRA_DURATION_MINUTES, minutes)
+            putExtra(FocusSessionService.EXTRA_IS_BREAK, isBreak)
         }
         ContextCompat.startForegroundService(requireContext(), startIntent)
         binding.btnFocusToggle.text = getString(R.string.focus_session_stop)

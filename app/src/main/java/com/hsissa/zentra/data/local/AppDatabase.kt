@@ -14,13 +14,19 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         AppLimitEntity::class,
         FocusSessionEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun usageDao(): UsageDao
 
     companion object {
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Old records may have been captured before the end of the day.
+                db.execSQL("ALTER TABLE `usage_records` ADD COLUMN `isFinalized` INTEGER NOT NULL DEFAULT 0")
+            }
+        }
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(
@@ -69,7 +75,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "zentra_database"
                 )
-                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                     .fallbackToDestructiveMigrationOnDowngrade()
                     .build()
                 INSTANCE = instance

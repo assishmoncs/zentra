@@ -170,6 +170,14 @@
                 </LinearLayout>
 
             </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvWeeklyReview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm"
+                android:textColor="@color/text_secondary"
+                android:textSize="@dimen/text_caption" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

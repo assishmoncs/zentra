@@ -2,12 +2,39 @@
 <resources>
     <string name="app_name">Zentra</string>
     <string name="permission_title">Zentra</string>
-    <string name="permission_description">To calculate your focus and provide insights, Zentra requires access to your usage statistics.</string>
+    <string name="permission_description">Usage access lets Zentra calculate your score and insights. You can still use focus sessions without it.</string>
     <string name="permission_instruction">Please enable “Usage access” for Zentra in the next screen.</string>
     <string name="grant_access">Continue to Settings</string>
     <string name="retry">Retry</string>
     <string name="close">Close</string>
     <string name="settings_header_subtitle">Shape Zentra around how you want to use your time.</string>
+    <string name="reminders_title">APP REMINDERS</string>
+    <string name="reminders_description">Set daily app usage reminders. Checks are approximate and may be delayed; Zentra does not block apps.</string>
+    <string name="manage_limits">Manage app reminders</string>
+    <string name="default_reminders">Remind me about distracting apps</string>
+    <string name="default_threshold">Set distracting-app reminder threshold</string>
+    <string name="notification_settings">Enable or manage notifications</string>
+    <string name="notification_explanation">Notifications let Zentra show focus updates and optional usage reminders.</string>
+    <string name="focus_without_notifications">Continue without notifications</string>
+    <string name="no_apps_for_limits">No apps found. Try again after installed apps load.</string>
+    <string name="limit_minutes_hint">Daily limit in minutes (1–1440)</string>
+    <string name="limit_invalid">Enter a whole number from 1 to 1440.</string>
+    <string name="limit_removed">Remove reminder</string>
+    <string name="edit_reminder">Edit reminder</string>
+    <string name="pause_reminder">Pause reminder</string>
+    <string name="resume_reminder">Resume reminder</string>
+    <string name="reminder_paused">paused</string>
+    <string name="settings_recovery_warning">Secure settings are temporarily unavailable. Changes use a separate private, unencrypted store; existing encrypted settings have been preserved.</string>
+    <string name="focus_history">Focus session history</string>
+    <string name="share_diagnostics">Share basic diagnostic information</string>
+    <string name="share_diagnostics_title">Share diagnostic information</string>
+    <string name="app_usage_current">%1$s used today</string>
+    <string name="focus_history_empty">No completed sessions yet.</string>
+    <string name="focus_history_streak">Current consecutive-day streak: %1$d\nLongest streak: %2$d\nTotal focus: %3$d min\n\n</string>
+    <string name="delete_history">Delete local history</string>
+    <string name="delete_history_confirm">Delete Zentra’s saved usage summaries and focus-session history? Android may still retain system usage statistics, which can reappear in insights. App reminders and settings will remain.</string>
+    <string name="history_deleted">Saved history deleted.</string>
+    <string name="reset_category">Reset to default</string>
     <string name="settings_goal_value_label">CURRENT TARGET</string>
     <string name="settings_category_help_content">Choose how each app affects your Focus Score. Productive apps carry less weight, while distracting apps carry more.</string>
     <string name="settings_quiet_enabled">Quiet hours are active</string>
@@ -23,8 +50,10 @@
     <string name="insights_value_score">%1$d</string>
     <string name="insights_value_time">%1$s</string>
     <string name="insights_chart_hint">Tap a day to inspect its usage.</string>
+    <string name="weekly_review">Last 3 complete days: %1$s. Previous 3 days: %2$s. Today is excluded.</string>
+    <string name="weekly_review_unavailable">Weekly comparison needs six complete days of usage data.</string>
     <string name="mindfulness_title">Mindful Pause</string>
-    <string name="mindfulness_message">You\'ve reached your configured usage quota for %1$s. Take a moment to reflect before continuing.</string>
+    <string name="mindfulness_message">You\'ve spent time on %1$s today. Take a moment to reflect before continuing.</string>
     <string name="mindfulness_default_app">this app</string>
     <string name="mindfulness_timer_initial">Pause for 5 seconds…</string>
     <string name="mindfulness_breathe">Breathe in… (%1$d s)</string>
@@ -64,11 +93,21 @@
     <string name="focus_session_timer_placeholder">25:00</string>
     <string name="focus_session_finished">Session Finished!</string>
     <string name="focus_session_running">Focusing…</string>
+    <string name="focus_choose_duration">Choose a focus duration</string>
+    <string name="focus_25">25 minutes</string>
+    <string name="focus_45">45 minutes</string>
+    <string name="focus_60">60 minutes</string>
+    <string name="focus_custom">Custom duration</string>
+    <string name="break_offer">Focus session complete. Would you like a five-minute break?</string>
+    <string name="break_start">Start break</string>
 
     <!-- Daily Goal -->
     <string name="goal_label">Daily Goal: %1$d</string>
-    <string name="goal_reached">Daily Goal Achieved! 🎯</string>
+    <string name="goal_reached">Currently above today’s target 🎯</string>
     <string name="goal_remaining">%1$d points to reach goal</string>
+    <string name="goal_below_target">Below today’s target</string>
+    <string name="score_unavailable">Unavailable</string>
+    <string name="weekly_avg_available">Average Focus: %1$d (%2$d days available)</string>
 
     <!-- Weekly Trends -->
     <string name="weekly_trends_title">WEEKLY TRENDS</string>
@@ -89,11 +128,11 @@
     <string name="settings_daily_goal_label">Daily Focus Target</string>
     <string name="settings_daily_goal_desc">Try to keep your score above this target.</string>
     <string name="settings_app_cat_title">APP CATEGORIZATION</string>
-    <string name="settings_app_cat_desc">Categorize apps to adjust how they impact your Focus Score. Distracting apps penalize your score 2x more than Productive apps.</string>
+    <string name="settings_app_cat_desc">Choose how apps affect your score. Distracting usage has ten times the weight of productive usage. Historical scores use current categories when system history is available.</string>
     <string name="settings_select_category_title">Select Category for %1$s</string>
     <string name="settings_downtime_title">DOWNTIME</string>
     <string name="settings_quiet_hours_label">Quiet Hours</string>
-    <string name="settings_quiet_hours_desc">Reduce notifications and encourage off-screen time.</string>
+    <string name="settings_quiet_hours_desc">Pause reminders during quiet hours. Equal start and end times pause them all day.</string>
     <string name="settings_start_label">Start</string>
     <string name="settings_end_label">End</string>
 

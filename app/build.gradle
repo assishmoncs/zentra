@@ -16,14 +16,14 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace 'com.hsissa.zentra'
-    compileSdk 34
+    compileSdk 36
 
     defaultConfig {
         applicationId "com.hsissa.zentra"
         minSdk 26
-        targetSdk 34
-        versionCode 6
-        versionName "2.5"
+        targetSdk 36
+        versionCode 7
+        versionName "2.6.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

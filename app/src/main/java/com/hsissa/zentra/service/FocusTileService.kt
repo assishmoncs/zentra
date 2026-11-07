@@ -13,7 +13,16 @@ class FocusTileService : TileService() {
     override fun onClick() {
         super.onClick()
         val tile = qsTile ?: return
-        val currentlyActive = FocusSessionService.isSessionActive || tile.state == Tile.STATE_ACTIVE
+        val session = FocusSessionStore(applicationContext).active()
+        if (session != null && session.end <= System.currentTimeMillis()) {
+            // Recover an overdue completion before allowing a subsequent session.
+            val recoverIntent = Intent(this, FocusSessionService::class.java).apply {
+                action = FocusSessionService.ACTION_START_SESSION
+            }
+            ContextCompat.startForegroundService(this, recoverIntent)
+            return
+        }
+        val currentlyActive = session != null
 
         if (currentlyActive) {
             val stopIntent = Intent(this, FocusSessionService::class.java).apply {
@@ -37,7 +46,7 @@ class FocusTileService : TileService() {
     override fun onStartListening() {
         super.onStartListening()
         val tile = qsTile ?: return
-        if (FocusSessionService.isSessionActive) {
+        if (FocusSessionStore(applicationContext).active()?.let { it.end > System.currentTimeMillis() } == true) {
             tile.label = "Focus: On"
             tile.state = Tile.STATE_ACTIVE
         } else {

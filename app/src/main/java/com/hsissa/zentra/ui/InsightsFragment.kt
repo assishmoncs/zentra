@@ -49,6 +49,13 @@ class InsightsFragment : Fragment() {
     private fun setupTrendChart() {
         binding.trendChartView.onItemSelected = { summary ->
             summary?.let {
+                if (!it.isAvailable) {
+                    binding.tvDetailDate.text = TimeFormatter.formatDate(it.dayTimestamp)
+                    binding.tvDetailStats.text = getString(R.string.score_unavailable)
+                    binding.tvDetailDate.visibility = View.VISIBLE
+                    binding.tvDetailStats.visibility = View.VISIBLE
+                    return@let
+                }
                 val dateStr = TimeFormatter.formatDate(it.dayTimestamp)
                 binding.tvDetailDate.text = getString(R.string.insight_detail_date, dateStr)
                 binding.tvDetailStats.text = getString(
@@ -78,15 +85,20 @@ class InsightsFragment : Fragment() {
                 binding.trendChartView.setData(trend)
 
                 val totalTime = trend.sumOf { it.totalScreenTimeMillis }
-                val avgScore = ScoreManager.computeScore(
-                    trend.sumOf { it.weightedScreenTimeMillis } / trend.size
-                )
+                val avgScore = ScoreManager.averageDailyScore(trend)
 
-                binding.tvWeeklyAvg.text = getString(R.string.insights_value_score, avgScore)
+                binding.tvWeeklyAvg.text = avgScore?.let { getString(R.string.insights_value_score, it) }
+                    ?: getString(R.string.score_unavailable)
                 binding.tvWeeklyTotal.text = getString(
                     R.string.insights_value_time,
                     TimeFormatter.formatMillis(totalTime)
                 )
+                val completedDays = trend.dropLast(1)
+                binding.tvWeeklyReview.text = if (completedDays.size == 6 && completedDays.all { it.isAvailable }) {
+                    val previous = completedDays.take(3).sumOf { it.totalScreenTimeMillis }
+                    val recent = completedDays.takeLast(3).sumOf { it.totalScreenTimeMillis }
+                    getString(R.string.weekly_review, TimeFormatter.formatMillis(recent), TimeFormatter.formatMillis(previous))
+                } else getString(R.string.weekly_review_unavailable)
             }
             renderState()
         }

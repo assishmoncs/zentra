@@ -29,6 +29,17 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
+      - name: Verify signing secrets
+        env:
+          ZENTRA_KEYSTORE_BASE64: ${{ secrets.ZENTRA_KEYSTORE_BASE64 }}
+          ZENTRA_KEYSTORE_PASSWORD: ${{ secrets.ZENTRA_KEYSTORE_PASSWORD }}
+          ZENTRA_KEY_ALIAS: ${{ secrets.ZENTRA_KEY_ALIAS }}
+          ZENTRA_KEY_PASSWORD: ${{ secrets.ZENTRA_KEY_PASSWORD }}
+        run: |
+          for name in ZENTRA_KEYSTORE_BASE64 ZENTRA_KEYSTORE_PASSWORD ZENTRA_KEY_ALIAS ZENTRA_KEY_PASSWORD; do
+            if [ -z "${!name}" ]; then echo "Missing release signing secret: $name"; exit 1; fi
+          done
+
       - name: Decode Release Keystore (if secret provided)
         if: env.ZENTRA_KEYSTORE_BASE64 != ''
         env:

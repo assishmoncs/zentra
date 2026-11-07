@@ -15,8 +15,39 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Test
+import java.time.LocalDate
+import java.time.ZoneId
 
 class UsageRepositoryTest {
+
+    @Test
+    fun getWeeklyTrend_reconcilesPartialCachedYesterday() = runTest {
+        val dao = FakeUsageDao()
+        val local = UsageLocalDataSource(dao, Gson())
+        val yesterday = LocalDate.now().minusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        local.save(DailyUsageSummary(60_000L, 60_000L, emptyList(), dayTimestamp = yesterday))
+        val source = object : UsageStatsDataSource(null) {
+            override fun getSummaryForDay(dayStart: Long, dayEnd: Long) =
+                DailyUsageSummary(180_000L, 180_000L, emptyList(), dayTimestamp = dayStart)
+        }
+        val trend = UsageRepository(source, local).getWeeklyTrend()
+        assertEquals(180_000L, trend.first { it.dayTimestamp == yesterday }.totalScreenTimeMillis)
+        assertEquals(180_000L, dao.getUsageRecord(yesterday)?.totalScreenTimeMillis)
+    }
+
+    @Test
+    fun getWeeklyTrend_fallsBackOnlyToFinalizedHistory() = runTest {
+        val dao = FakeUsageDao()
+        val local = UsageLocalDataSource(dao, Gson())
+        val zone = ZoneId.systemDefault()
+        val yesterday = LocalDate.now().minusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
+        val twoDaysAgo = LocalDate.now().minusDays(2).atStartOfDay(zone).toInstant().toEpochMilli()
+        local.save(DailyUsageSummary(60_000L, 60_000L, emptyList(), dayTimestamp = yesterday))
+        local.save(DailyUsageSummary(120_000L, 120_000L, emptyList(), dayTimestamp = twoDaysAgo), isFinalized = true)
+        val trend = UsageRepository(UsageStatsDataSource(null), local).getWeeklyTrend()
+        assertEquals(false, trend.first { it.dayTimestamp == yesterday }.isAvailable)
+        assertEquals(120_000L, trend.first { it.dayTimestamp == twoDaysAgo }.totalScreenTimeMillis)
+    }
 
     @Test
     fun getTodayUsage_savesToLocalCacheOnlyOnSuccess() = runTest {
@@ -88,12 +119,17 @@ class UsageRepositoryTest {
             records[record.dayTimestamp] = record
         }
         override suspend fun getFocusStreak(): FocusStreakEntity? = null
+        override suspend fun deleteUsageHistory() = Unit
+        override suspend fun deleteFocusSessions() = Unit
+        override suspend fun deleteFocusStreaks() = Unit
         override suspend fun insertFocusStreak(streak: FocusStreakEntity) = Unit
         override suspend fun getAllAppLimits(): List<AppLimitEntity> = emptyList()
+        override suspend fun getAllAppLimitsIncludingDisabled(): List<AppLimitEntity> = emptyList()
         override suspend fun getAppLimit(packageName: String): AppLimitEntity? = null
         override suspend fun insertAppLimit(limit: AppLimitEntity) = Unit
         override suspend fun deleteAppLimit(packageName: String) = Unit
         override suspend fun getAllFocusSessions(): List<FocusSessionEntity> = emptyList()
+        override suspend fun getFocusSession(id: Long): FocusSessionEntity? = null
         override suspend fun insertFocusSession(session: FocusSessionEntity) = Unit
     }
 }

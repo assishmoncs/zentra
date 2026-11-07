@@ -137,16 +137,19 @@ object UsageStatsHelper {
      * Fetches daily usage summary for a specific day.
      */
     fun getSummaryForDay(context: Context, dayStart: Long, dayEnd: Long): DailyUsageSummary {
-        if (!hasUsagePermission(context)) return DailyUsageSummary.EMPTY
+        if (!hasUsagePermission(context)) return DailyUsageSummary.EMPTY.copy(dayTimestamp = dayStart)
 
         return try {
             val usageStatsManager =
                 context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
-                    ?: return DailyUsageSummary.EMPTY
+                    ?: return DailyUsageSummary.EMPTY.copy(dayTimestamp = dayStart)
             val packageManager = context.packageManager
             val launcherPackage = getLauncherPackageName(packageManager)
 
             val aggregatedStats = getUsageFromEvents(usageStatsManager, dayStart, dayEnd)
+            // An empty event stream does not prove zero usage; Android may no longer
+            // retain the events or usage access may have only just been granted.
+            if (aggregatedStats.isEmpty()) return DailyUsageSummary.EMPTY.copy(dayTimestamp = dayStart)
 
             val nonSystemUsage = aggregatedStats.filter { (pkg, time) ->
                 time > 0 &&
@@ -181,7 +184,7 @@ object UsageStatsHelper {
             )
         } catch (e: Exception) {
             Log.e(TAG, "Failed to compute summary for dayStart=$dayStart", e)
-            DailyUsageSummary.EMPTY
+            DailyUsageSummary.EMPTY.copy(dayTimestamp = dayStart)
         }
     }
 
@@ -302,7 +305,7 @@ object UsageStatsHelper {
         return resolveInfo?.activityInfo?.packageName
     }
 
-    private fun getCategory(context: Context, packageName: String): AppCategory {
+    fun getCategory(context: Context, packageName: String): AppCategory {
         return SettingsManager.getInstance(context).getAppCategory(packageName)
             ?: when {
                 PRODUCTIVE_PACKAGES.any { packageName.contains(it) } -> AppCategory.PRODUCTIVE
@@ -355,14 +358,16 @@ data class DailyUsageSummary(
     val weightedScreenTimeMillis: Long,
     val topApps: List<AppUsageInfo>,
     val fullUsageList: List<AppUsageInfo> = emptyList(),
-    val dayTimestamp: Long = 0L
+    val dayTimestamp: Long = 0L,
+    val isAvailable: Boolean = true
 ) {
     companion object {
         val EMPTY = DailyUsageSummary(
             totalScreenTimeMillis = 0L,
             weightedScreenTimeMillis = 0L,
             topApps = emptyList(),
-            fullUsageList = emptyList()
+            fullUsageList = emptyList(),
+            isAvailable = false
         )
     }
 }

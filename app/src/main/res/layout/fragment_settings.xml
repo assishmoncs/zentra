@@ -37,6 +37,65 @@
             android:orientation="vertical"
             android:paddingBottom="@dimen/space_4xl">
 
+            <TextView
+                style="@style/Zentra.Text.Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reminders_title" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm"
+                android:text="@string/reminders_description"
+                android:textColor="@color/text_secondary" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnManageLimits"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/manage_limits" />
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switchDefaultReminders"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_xl"
+                android:text="@string/default_reminders"
+                android:textColor="@color/text_primary" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDefaultThreshold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/default_threshold" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnNotificationSettings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_xl"
+                android:text="@string/notification_settings" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnFocusHistory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/focus_history" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnShareDiagnostics"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/share_diagnostics" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDeleteHistory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_xl"
+                android:text="@string/delete_history" />
+
             <!-- Goals -->
             <TextView
                 style="@style/Zentra.Text.Label"

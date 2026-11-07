@@ -14,6 +14,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import com.hsissa.zentra.util.TimeFormatter
 
 class TrendChartView @JvmOverloads constructor(
     context: Context,
@@ -48,7 +49,11 @@ class TrendChartView @JvmOverloads constructor(
         contentDescription = if (newData.isEmpty()) {
             context.getString(R.string.insights_state_empty)
         } else {
-            context.getString(R.string.insights_chart_content_description)
+            context.getString(R.string.insights_chart_content_description) + " " + newData.joinToString("; ") {
+                val value = if (it.isAvailable) TimeFormatter.formatMillis(it.totalScreenTimeMillis)
+                    else context.getString(R.string.score_unavailable)
+                "${TimeFormatter.formatDate(it.dayTimestamp)}: $value"
+            }
         }
         invalidate()
     }

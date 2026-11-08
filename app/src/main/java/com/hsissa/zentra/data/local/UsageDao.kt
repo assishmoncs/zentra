@@ -16,6 +16,15 @@ interface UsageDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUsageRecord(record: UsageRecord)
 
+    @Query("DELETE FROM usage_records")
+    suspend fun deleteUsageHistory()
+
+    @Query("DELETE FROM focus_sessions")
+    suspend fun deleteFocusSessions()
+
+    @Query("DELETE FROM focus_streaks")
+    suspend fun deleteFocusStreaks()
+
     // Focus Streaks
     @Query("SELECT * FROM focus_streaks WHERE id = 1")
     suspend fun getFocusStreak(): FocusStreakEntity?
@@ -26,6 +35,9 @@ interface UsageDao {
     // App Limits
     @Query("SELECT * FROM app_limits WHERE isEnabled = 1")
     suspend fun getAllAppLimits(): List<AppLimitEntity>
+
+    @Query("SELECT * FROM app_limits")
+    suspend fun getAllAppLimitsIncludingDisabled(): List<AppLimitEntity>
 
     @Query("SELECT * FROM app_limits WHERE packageName = :packageName AND isEnabled = 1")
     suspend fun getAppLimit(packageName: String): AppLimitEntity?
@@ -39,6 +51,9 @@ interface UsageDao {
     // Focus Sessions
     @Query("SELECT * FROM focus_sessions ORDER BY timestamp DESC")
     suspend fun getAllFocusSessions(): List<FocusSessionEntity>
+
+    @Query("SELECT * FROM focus_sessions WHERE id = :id LIMIT 1")
+    suspend fun getFocusSession(id: Long): FocusSessionEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFocusSession(session: FocusSessionEntity)

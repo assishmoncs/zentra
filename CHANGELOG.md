@@ -2,6 +2,15 @@
 
 All notable changes to Zentra are documented here.
 
+## [2.6.0] - 2026-11-07
+
+- Target Android 16 and update the Android build tooling.
+- Reconcile daily usage history, calculate averages from daily scores, and distinguish unavailable data.
+- Add configurable, pausable app reminders, notification controls, and reminder cooldowns.
+- Persist focus sessions for recovery, track consecutive-day streaks, and show session history.
+- Add local-history deletion, category reset, configurable focus durations, and accessible chart summaries.
+- Exclude app data from configured backups and warn if secure settings cannot be opened.
+
 ## [2.5.0] - 2026-10-27
 
 ### Phase 4 — Production Readiness & Hardening

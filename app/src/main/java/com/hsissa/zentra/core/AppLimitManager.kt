@@ -13,8 +13,15 @@ class AppLimitManager @Inject constructor(
         return usageDao.getAllAppLimits()
     }
 
-    suspend fun setLimit(packageName: String, limitMinutes: Int) {
-        val entity = AppLimitEntity(packageName = packageName, limitMinutes = limitMinutes, isEnabled = true)
+    suspend fun getAllLimits(): List<AppLimitEntity> = usageDao.getAllAppLimitsIncludingDisabled()
+
+    suspend fun setEnabled(limit: AppLimitEntity, enabled: Boolean) {
+        usageDao.insertAppLimit(limit.copy(isEnabled = enabled))
+    }
+
+    suspend fun setLimit(packageName: String, limitMinutes: Int, isEnabled: Boolean = true) {
+        require(packageName.isNotBlank() && limitMinutes in 1..1440)
+        val entity = AppLimitEntity(packageName = packageName, limitMinutes = limitMinutes, isEnabled = isEnabled)
         usageDao.insertAppLimit(entity)
     }
 

@@ -13,6 +13,13 @@ import kotlin.math.roundToInt
  */
 object ScoreManager {
 
+    fun averageDailyScore(summaries: List<com.hsissa.zentra.service.DailyUsageSummary>): Int? {
+        val available = summaries.filter { it.isAvailable }
+        return available.takeIf { it.isNotEmpty() }
+            ?.map { computeScore(it.weightedScreenTimeMillis) }
+            ?.average()?.roundToInt()
+    }
+
     /**
      * Computes the score from screen time in milliseconds.
      *

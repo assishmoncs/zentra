@@ -15,7 +15,7 @@ import javax.inject.Singleton
 
 /**
  * Manages user preferences including custom app categories, goals, quiet hours, and cached widget score.
- * Uses EncryptedSharedPreferences with automatic recovery from Keystore corruption
+ * Uses EncryptedSharedPreferences and preserves the encrypted file on Keystore failures
  * and an in-memory cache to avoid repeated cryptographic/disk lookups inside loops.
  */
 @Singleton
@@ -41,11 +41,11 @@ class SettingsManager @Inject constructor(
         return try {
             createEncryptedPrefs(context)
         } catch (e: GeneralSecurityException) {
-            Log.e(TAG, "EncryptedSharedPreferences corrupted after restore/key invalidation; resetting", e)
-            recoverCorruptedPrefs(context)
+            Log.e(TAG, "Secure preferences unavailable; preserving encrypted settings", e)
+            fallbackPrefs(context)
         } catch (e: Exception) {
-            Log.e(TAG, "Unexpected error initializing EncryptedSharedPreferences; resetting", e)
-            recoverCorruptedPrefs(context)
+            Log.e(TAG, "Secure preferences unavailable; preserving encrypted settings", e)
+            fallbackPrefs(context)
         }
     }
 
@@ -63,20 +63,48 @@ class SettingsManager @Inject constructor(
         )
     }
 
-    private fun recoverCorruptedPrefs(context: Context): SharedPreferences {
-        return try {
-            context.deleteSharedPreferences(PREFS_NAME)
-            createEncryptedPrefs(context)
-        } catch (fallbackError: Exception) {
-            Log.e(TAG, "Fallback to private SharedPreferences after Keystore failure", fallbackError)
-            context.getSharedPreferences("${PREFS_NAME}_fallback", Context.MODE_PRIVATE)
-        }
+    @Volatile var usingFallbackPreferences: Boolean = false
+        private set
+
+    private fun fallbackPrefs(context: Context): SharedPreferences {
+        // Preserve the encrypted file for later recovery instead of deleting user data.
+        usingFallbackPreferences = true
+        return context.getSharedPreferences("${PREFS_NAME}_fallback", Context.MODE_PRIVATE)
+    }
+
+    fun areDefaultRemindersEnabled(): Boolean = prefs.getBoolean("default_reminders", true)
+
+    fun notificationPermissionRequested(): Boolean = prefs.getBoolean("notification_permission_requested", false)
+    fun markNotificationPermissionRequested() { prefs.edit().putBoolean("notification_permission_requested", true).apply() }
+
+    fun getDefaultReminderMinutes(): Int = prefs.getInt("default_reminder_minutes", 30).coerceIn(1, 1440)
+
+    fun setDefaultReminderMinutes(minutes: Int) {
+        prefs.edit().putInt("default_reminder_minutes", minutes.coerceIn(1, 1440)).apply()
+    }
+
+    fun setDefaultRemindersEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean("default_reminders", enabled).apply()
+    }
+
+    fun wasRemindedToday(packageName: String, date: String): Boolean =
+        prefs.getString("reminded_$packageName", null) == date
+
+    fun markRemindedToday(packageName: String, date: String) {
+        prefs.edit().putString("reminded_$packageName", date).apply()
     }
 
     fun setAppCategory(packageName: String, category: AppCategory) {
         categoryCache[packageName] = category
         prefs.edit().putString(KEY_PREFIX_CATEGORY + packageName, category.name).apply()
     }
+
+    fun resetAppCategory(packageName: String) {
+        categoryCache.remove(packageName)
+        prefs.edit().remove(KEY_PREFIX_CATEGORY + packageName).apply()
+    }
+
+    fun clearLastFocusScore() { prefs.edit().remove(KEY_LAST_FOCUS_SCORE).apply() }
 
     fun getAppCategory(packageName: String): AppCategory? {
         categoryCache[packageName]?.let { return it }
@@ -153,10 +181,12 @@ class SettingsManager @Inject constructor(
         val start = LocalTime.of(startH.coerceIn(0, 23), startM.coerceIn(0, 59))
         val end = LocalTime.of(endH.coerceIn(0, 23), endM.coerceIn(0, 59))
 
-        return if (start <= end) {
-            !now.isBefore(start) && !now.isAfter(end)
+        return if (start == end) {
+            true
+        } else if (start < end) {
+            !now.isBefore(start) && now.isBefore(end)
         } else {
-            !now.isBefore(start) || !now.isAfter(end)
+            !now.isBefore(start) || now.isBefore(end)
         }
     }
 

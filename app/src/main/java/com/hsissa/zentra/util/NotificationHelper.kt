@@ -35,14 +35,14 @@ object NotificationHelper {
         title: String,
         message: String,
         exceededAppName: String? = null
-    ) {
+    ): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (androidx.core.content.ContextCompat.checkSelfPermission(
                     context,
                     android.Manifest.permission.POST_NOTIFICATIONS
                 ) != android.content.pm.PackageManager.PERMISSION_GRANTED
             ) {
-                return
+                return false
             }
         }
 
@@ -54,7 +54,7 @@ object NotificationHelper {
         }
         val pendingIntent = PendingIntent.getActivity(
             context,
-            0,
+            exceededAppName?.hashCode() ?: 0,
             overlayIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -69,10 +69,16 @@ object NotificationHelper {
 
         try {
             with(NotificationManagerCompat.from(context)) {
-                notify(System.currentTimeMillis().toInt(), builder.build())
+                if (!areNotificationsEnabled()) return false
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+                    (context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
+                        .getNotificationChannel(CHANNEL_ID)?.importance == NotificationManager.IMPORTANCE_NONE) return false
+                notify(exceededAppName?.hashCode() ?: 0, builder.build())
             }
+            return true
         } catch (e: SecurityException) {
             Log.w(TAG, "Notification permission revoked before notify()", e)
+            return false
         }
     }
 }

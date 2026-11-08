@@ -82,12 +82,17 @@ class UsageLocalDataSourceTest {
             records[record.dayTimestamp] = record
         }
         override suspend fun getFocusStreak(): FocusStreakEntity? = null
+        override suspend fun deleteUsageHistory() = Unit
+        override suspend fun deleteFocusSessions() = Unit
+        override suspend fun deleteFocusStreaks() = Unit
         override suspend fun insertFocusStreak(streak: FocusStreakEntity) = Unit
         override suspend fun getAllAppLimits(): List<AppLimitEntity> = emptyList()
+        override suspend fun getAllAppLimitsIncludingDisabled(): List<AppLimitEntity> = emptyList()
         override suspend fun getAppLimit(packageName: String): AppLimitEntity? = null
         override suspend fun insertAppLimit(limit: AppLimitEntity) = Unit
         override suspend fun deleteAppLimit(packageName: String) = Unit
         override suspend fun getAllFocusSessions(): List<FocusSessionEntity> = emptyList()
+        override suspend fun getFocusSession(id: Long): FocusSessionEntity? = null
         override suspend fun insertFocusSession(session: FocusSessionEntity) = Unit
     }
 }

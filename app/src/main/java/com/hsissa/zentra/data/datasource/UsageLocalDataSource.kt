@@ -16,7 +16,7 @@ open class UsageLocalDataSource @Inject constructor(
     open suspend fun get(dayTimestamp: Long): UsageRecord? =
         usageDao.getUsageRecord(dayTimestamp)
 
-    open suspend fun save(summary: DailyUsageSummary) {
+    open suspend fun save(summary: DailyUsageSummary, isFinalized: Boolean = false) {
         if (summary.dayTimestamp == 0L) return
 
         usageDao.insertUsageRecord(
@@ -24,7 +24,8 @@ open class UsageLocalDataSource @Inject constructor(
                 dayTimestamp = summary.dayTimestamp,
                 totalScreenTimeMillis = summary.totalScreenTimeMillis,
                 weightedScreenTimeMillis = summary.weightedScreenTimeMillis,
-                topAppsJson = gson.toJson(summary.topApps)
+                topAppsJson = gson.toJson(summary.topApps),
+                isFinalized = isFinalized
             )
         )
     }

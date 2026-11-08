@@ -3,8 +3,18 @@ package com.hsissa.zentra.core
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import com.hsissa.zentra.service.DailyUsageSummary
 
 class ScoreManagerTest {
+
+    @Test
+    fun averageDailyScore_averagesScoresAndIgnoresUnavailableDays() {
+        val low = DailyUsageSummary(0, 300 * 60_000L, emptyList())
+        val high = DailyUsageSummary(0, 0, emptyList())
+        val unavailable = DailyUsageSummary.EMPTY
+        assertEquals(71, ScoreManager.averageDailyScore(listOf(low, high, unavailable)))
+        assertEquals(null, ScoreManager.averageDailyScore(listOf(unavailable)))
+    }
 
     @Test
     fun computeScore_zeroUsage_returnsMaxScore() {

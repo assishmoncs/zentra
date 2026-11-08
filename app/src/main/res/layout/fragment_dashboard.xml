@@ -8,15 +8,16 @@
     android:fillViewport="true"
     android:clipToPadding="false">
 
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
         <!-- Permission state -->
         <LinearLayout
             android:id="@+id/layoutPermission"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="center"
             android:padding="@dimen/space_4xl"
@@ -486,5 +487,5 @@
                 android:visibility="gone" />
 
         </LinearLayout>
-    </FrameLayout>
+    </LinearLayout>
 </ScrollView>

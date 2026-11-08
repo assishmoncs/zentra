@@ -7,15 +7,14 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.ComponentName
 import android.os.Binder
 import android.os.Build
 import android.os.CountDownTimer
 import android.os.IBinder
+import android.service.quicksettings.TileService
 import androidx.core.app.NotificationCompat
 import com.hsissa.zentra.R
-import com.hsissa.zentra.data.local.AppDatabase
-import com.hsissa.zentra.data.local.FocusSessionEntity
-import com.hsissa.zentra.data.local.FocusStreakEntity
 import com.hsissa.zentra.ui.MainActivity
 import java.util.Locale
 import kotlinx.coroutines.CoroutineScope
@@ -23,17 +22,20 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class FocusSessionService : Service() {
 
     private val binder = LocalBinder()
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var countDownTimer: CountDownTimer? = null
-    private var activeDurationMinutes: Int = DEFAULT_DURATION_MINUTES
+    private lateinit var sessionStore: FocusSessionStore
 
     var isRunning = false
         private set
     var remainingTimeMillis: Long = 0
+        private set
+    var isBreak: Boolean = false
         private set
 
     var onTickListener: ((Long) -> Unit)? = null
@@ -48,13 +50,15 @@ class FocusSessionService : Service() {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
+        sessionStore = FocusSessionStore(applicationContext)
+        sessionStore.active()?.let { restoreSession(it) }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_START_SESSION -> {
                 val minutes = intent.getIntExtra(EXTRA_DURATION_MINUTES, DEFAULT_DURATION_MINUTES)
-                startSession(minutes)
+                startSession(minutes, intent.getBooleanExtra(EXTRA_IS_BREAK, false))
             }
             ACTION_STOP_SESSION -> {
                 stopSession()
@@ -63,21 +67,28 @@ class FocusSessionService : Service() {
         return START_NOT_STICKY
     }
 
-    fun startSession(durationMinutes: Int = DEFAULT_DURATION_MINUTES) {
+    fun startSession(durationMinutes: Int = DEFAULT_DURATION_MINUTES, isBreak: Boolean = false) {
+        if (sessionStore.active() != null) return
+        if (durationMinutes !in 1..1440) return
+        restoreSession(sessionStore.start(durationMinutes, isBreak))
+    }
+
+    private fun restoreSession(session: FocusSessionStore.Session) {
         countDownTimer?.cancel()
-        activeDurationMinutes = durationMinutes
-        val totalMs = durationMinutes * 60 * 1000L
+        isBreak = session.isBreak
+        val totalMs = (session.end - System.currentTimeMillis()).coerceAtLeast(0L)
         remainingTimeMillis = totalMs
         isRunning = true
         isSessionActive = true
+        refreshTile()
 
         // Use native Android chronometer countdown instead of per-second Binder notify() calls
         startForeground(
             NOTIFICATION_ID,
             buildNotification(
-                title = "Focus Session in Progress",
-                content = "Stay focused (${formatTime(totalMs)})",
-                targetEndTimeMillis = System.currentTimeMillis() + totalMs,
+                title = if (isBreak) "Break in Progress" else "Focus Session in Progress",
+                content = if (isBreak) "Take a break (${formatTime(totalMs)})" else "Stay focused (${formatTime(totalMs)})",
+                targetEndTimeMillis = session.end,
                 ongoing = true
             )
         )
@@ -89,54 +100,41 @@ class FocusSessionService : Service() {
             }
 
             override fun onFinish() {
-                isRunning = false
-                isSessionActive = false
                 remainingTimeMillis = 0
-                recordCompletedSession(activeDurationMinutes)
-                onFinishListener?.invoke()
-                updateNotification(
-                    title = "Focus Session Finished!",
-                    content = "Great job staying focused.",
-                    targetEndTimeMillis = null,
-                    ongoing = false
-                )
-                stopForeground(STOP_FOREGROUND_DETACH)
+                serviceScope.launch {
+                    try {
+                        sessionStore.complete(session.id)
+                    } catch (_: Exception) {
+                        // The independently scheduled worker retries durable completion.
+                    }
+                    withContext(Dispatchers.Main) {
+                        isRunning = false
+                        isSessionActive = false
+                        refreshTile()
+                        onFinishListener?.invoke()
+                        updateNotification(
+                            title = if (isBreak) "Break Finished!" else "Focus Session Finished!",
+                            content = if (isBreak) "Your break is complete." else "Great job staying focused.",
+                            targetEndTimeMillis = null,
+                            ongoing = false
+                        )
+                        stopForeground(STOP_FOREGROUND_DETACH)
+                        stopSelf()
+                    }
+                }
             }
         }.start()
     }
 
     fun stopSession() {
         countDownTimer?.cancel()
+        sessionStore.cancel()
         isRunning = false
         isSessionActive = false
+        refreshTile()
         remainingTimeMillis = 0
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
-    }
-
-    private fun recordCompletedSession(durationMinutes: Int) {
-        val now = System.currentTimeMillis()
-        serviceScope.launch {
-            val dao = AppDatabase.getDatabase(applicationContext).usageDao()
-            dao.insertFocusSession(
-                FocusSessionEntity(
-                    durationMinutes = durationMinutes,
-                    timestamp = now,
-                    completed = true,
-                    sessionType = if (durationMinutes >= 45) "Deep Focus" else "Pomodoro"
-                )
-            )
-            val currentStreakEntity = dao.getFocusStreak() ?: FocusStreakEntity()
-            val newStreak = currentStreakEntity.currentStreak + 1
-            dao.insertFocusStreak(
-                currentStreakEntity.copy(
-                    currentStreak = newStreak,
-                    longestStreak = maxOf(currentStreakEntity.longestStreak, newStreak),
-                    totalFocusMinutes = currentStreakEntity.totalFocusMinutes + durationMinutes,
-                    lastGoalMetTimestamp = now
-                )
-            )
-        }
     }
 
     override fun onDestroy() {
@@ -144,6 +142,10 @@ class FocusSessionService : Service() {
         isSessionActive = false
         serviceScope.cancel()
         super.onDestroy()
+    }
+
+    private fun refreshTile() {
+        TileService.requestListeningState(this, ComponentName(this, FocusTileService::class.java))
     }
 
     private fun createNotificationChannel() {
@@ -213,6 +215,7 @@ class FocusSessionService : Service() {
         const val ACTION_START_SESSION = "com.hsissa.zentra.action.START_FOCUS_SESSION"
         const val ACTION_STOP_SESSION = "com.hsissa.zentra.action.STOP_FOCUS_SESSION"
         const val EXTRA_DURATION_MINUTES = "extra_duration_minutes"
+        const val EXTRA_IS_BREAK = "extra_is_break"
         const val DEFAULT_DURATION_MINUTES = 25
 
         @Volatile
